@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trust & Safety Dashboard — Opendoor Incident Reports</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#fff;--bg2:#f5f5f3;--bg3:#efefed;--text:#1a1a18;--text2:#6b6b67;--text3:#9b9b97;--border:rgba(0,0,0,0.12);--radius:8px;--radius-lg:12px;--blue:#378ADD;--red:#E24B4A;--green:#1D9E75;--amber:#EF9F27}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f0efeb;color:var(--text);font-size:14px;min-height:100vh}
+.header{background:var(--bg);border-bottom:0.5px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:100}
+.logo{font-size:15px;font-weight:600}.logo span{color:var(--blue)}
+.header-sub{font-size:12px;color:var(--text3);border-left:1px solid var(--border);padding-left:16px}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live-label{font-size:11px;color:var(--green)}
+.btn{font-size:12px;padding:6px 14px;border-radius:var(--radius);border:0.5px solid rgba(0,0,0,0.2);background:var(--bg);color:var(--text);cursor:pointer;transition:.15s}
+.btn:hover{background:var(--bg2)}
+.main{padding:20px 24px;max-width:1400px;margin:0 auto}
+.filter-bar{display:flex;gap:10px;align-items:center;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:10px 16px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.filter-bar select{font-size:12px;padding:5px 8px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg2);color:var(--text);height:30px;cursor:pointer}
+.filter-count{margin-left:auto;font-size:11px;color:var(--text3)}
+.tabs{display:flex;gap:2px;border-bottom:0.5px solid var(--border);margin-bottom:16px}
+.tab-btn{padding:9px 16px;font-size:13px;color:var(--text2);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--text);font-weight:500;border-bottom-color:var(--text)}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.metric-card{background:var(--bg2);border-radius:var(--radius);padding:14px 16px}
+.metric-label{font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.metric-value{font-size:26px;font-weight:500;color:var(--text);line-height:1}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:5px}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:500;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:14px;margin-bottom:14px}
+.g22{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--text2);font-weight:500;text-align:left;padding:5px 8px;border-bottom:0.5px solid var(--border);font-size:11px}
+td{padding:7px 8px;border-bottom:0.5px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:10px;font-size:12px;color:var(--text2)}
+.legend-item{display:flex;align-items:center;gap:4px}
+.sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+#map{width:100%;height:440px;border-radius:var(--radius)}
+.state-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px}
+.state-card{background:var(--bg2);border-radius:var(--radius);padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
+.hbar-row{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.hbar-label{font-size:10px;color:var(--text3);width:20px;text-align:right}
+.hbar-track{flex:1;background:var(--bg2);border-radius:3px;height:10px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:3px}
+.hbar-val{font-size:10px;color:var(--text2);width:36px;text-align:right}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">Opendoor <span>Trust &amp; Safety</span></div>
+  <div class="header-sub">DWH.DW.AX_INCIDENT_REPORTS</div>
+  <div class="header-right">
+    <div class="live-dot"></div><span class="live-label">Live · through Mar 2026</span>
+    <button class="btn" onclick="exportCSV()">Export CSV</button>
+    <button class="btn" onclick="window.print()">Print</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="filter-bar">
+    <label>Date range</label>
+    <select id="startDate" onchange="applyFilters()"></select>
+    <span style="font-size:12px;color:var(--text3)">→</span>
+    <select id="endDate" onchange="applyFilters()"></select>
+    <span style="font-size:12px;color:var(--text3);margin-left:8px">|</span>
+    <label style="margin-left:8px">Incident type</label>
+    <select id="typeFilter" onchange="applyFilters()"><option value="all">All types</option></select>
+    <label style="margin-left:8px">Market</label>
+    <select id="marketFilter" onchange="applyFilters()"><option value="all">All markets</option></select>
+    <span class="filter-count" id="filterCount"></span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="showTab('types',this)">Incident types</button>
+    <button class="tab-btn" onclick="showTab('markets',this)">Markets</button>
+    <button class="tab-btn" onclick="showTab('source',this)">Reporter source</button>
+    <button class="tab-btn" onclick="showTab('entry',this)">Mode of entry</button>
+    <button class="tab-btn" onclick="showTab('heatmap',this)">Activity heatmap</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="tab-overview" class="tab-pane active">
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-label">Incidents in range</div><div class="metric-value" id="ov-total">—</div><div class="metric-sub" id="ov-range">—</div></div>
+      <div class="metric-card"><div class="metric-label">Patrol dispatched</div><div class="metric-value" id="ov-patrol">—</div><div class="metric-sub" id="ov-patrol-pct">—</div></div>
+      <div class="metric-card"><div class="metric-label">Top incident type</div><div class="metric-value" id="ov-top-type">—</div><div class="metric-sub" id="ov-top-type-cnt">—</div></div>
+      <div class="metric-card"><div class="metric-label">Top market</div><div class="metric-value" id="ov-top-market">—</div><div class="metric-sub" id="ov-top-market-cnt">—</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Monthly volume — total vs patrol dispatched</div>
+        <div class="legend">
+          <div class="legend-item"><div class="sw" style="background:#B5D4F4"></div>Total</div>
+          <div class="legend-item"><div class="sw" style="background:#E24B4A"></div>Patrol dispatched</div>
+        </div>
+        <div style="position:relative;width:100%;height:230px"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Highest tier distribution</div>
+        <div style="position:relative;width:100%;height:160px"><canvas id="tierChart"></canvas></div>
+        <div class="legend" id="tier-legend" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tier breakdown — count &amp; patrol</div>
+      <table><thead><tr><th>Tier</th><th>Incidents</th><th>Patrol dispatched</th><th>Patrol %</th></tr></thead>
+      <tbody id="tier-table"></tbody></table>
+    </div>
+  </div>
+
+  <!-- TYPES -->
+  <div id="tab-types" class="tab-pane">
+    <div class="metric-grid" id="type-metrics"></div>
+    <div class="g22">
+      <div class="card">
+        <div class="card-title">Incidents by type</div>
+        <div style="position:relative;width:100%;height:360px"><canvas id="typeChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">All incident types</div>
+        <div style="max-height:380px;overflow-y:auto">
+          <table><thead><tr><th>Type</th><th>Count</th><th>Patrol</th><th>Patrol %</th></tr></thead>
+          <tbody id="type-table"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARKETS -->
+  <div id="tab-markets" class="tab-pane">
+    <div class="metric-grid" id="market-metrics"></div>
+    <div class="g22">
+      <div class="card">
+        <div class="card-title">Incidents by market</div>
+        <div style="position:relative;width:100%;height:360px"><canvas id="marketChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">All markets</div>
+        <div style="max-height:380px;overflow-y:auto">
+          <table><thead><tr><th>Market</th><th>Incidents</th><th>Patrol</th><th>Patrol %</th></tr></thead>
+          <tbody id="market-table"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOURCE -->
+  <div id="tab-source" class="tab-pane">
+    <div class="metric-grid" id="src-metrics"></div>
+    <div class="g22">
+      <div class="card">
+        <div class="card-title">Incidents by reporter source</div>
+        <div style="position:relative;width:100%;height:280px"><canvas id="sourceChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">All sources</div>
+        <table><thead><tr><th>Source</th><th>Count</th><th>Share</th></tr></thead><tbody id="src-table"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTRY -->
+  <div id="tab-entry" class="tab-pane">
+    <div class="metric-grid" id="entry-metrics"></div>
+    <div class="g22">
+      <div class="card">
+        <div class="card-title">Mode of entry</div>
+        <div style="position:relative;width:100%;height:280px"><canvas id="modeChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Physical vs digital</div>
+        <div id="entry-insights"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEATMAP -->
+  <div id="tab-heatmap" class="tab-pane">
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-label">Peak day</div><div class="metric-value">Mon–Wed</div><div class="metric-sub">Highest weekly volume</div></div>
+      <div class="metric-card"><div class="metric-label">Peak hours</div><div class="metric-value">3–6 PM</div><div class="metric-sub">Consistent across days</div></div>
+      <div class="metric-card"><div class="metric-label">Quietest time</div><div class="metric-value">4–7 AM</div><div class="metric-sub">Lowest incident rate</div></div>
+      <div class="metric-card"><div class="metric-label">Weekend vs weekday</div><div class="metric-value">–45%</div><div class="metric-sub">Weekend avg vs weekday</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Volume — day of week × hour of day</div>
+      <div id="hm-grid" style="display:grid;grid-template-columns:36px repeat(24,1fr);gap:2px;font-size:9px;color:var(--text3)"></div>
+      <div class="legend" style="margin-top:10px">
+        <div class="legend-item"><div class="sw" style="background:#EAF3DE"></div>Low</div>
+        <div class="legend-item"><div class="sw" style="background:#FAC775"></div>Moderate</div>
+        <div class="legend-item"><div class="sw" style="background:#EF9F27"></div>High</div>
+        <div class="legend-item"><div class="sw" style="background:#E24B4A"></div>Peak</div>
+      </div>
+    </div>
+    <div class="g22">
+      <div class="card" style="margin-bottom:0"><div class="card-title">By hour (all days)</div><div id="hour-bars"></div></div>
+      <div class="card" style="margin-bottom:0"><div class="card-title">By day (all hours)</div><div id="day-bars"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA from DWH.DW.AX_INCIDENT_REPORTS ─────────────────────────────────────
+const TREND=[["2021-01-01","43","9"],["2021-02-01","35","10"],["2021-03-01","41","15"],["2021-04-01","53","15"],["2021-05-01","75","24"],["2021-06-01","140","35"],["2021-07-01","161","45"],["2021-08-01","261","65"],["2021-09-01","264","58"],["2021-10-01","365","118"],["2021-11-01","371","80"],["2021-12-01","378","94"],["2022-01-01","414","99"],["2022-02-01","480","100"],["2022-03-01","717","101"],["2022-04-01","597","70"],["2022-05-01","677","98"],["2022-06-01","643","105"],["2022-07-01","1056","136"],["2022-08-01","1099","158"],["2022-09-01","988","160"],["2022-10-01","826","126"],["2022-11-01","687","82"],["2022-12-01","506","97"],["2023-01-01","498","110"],["2023-02-01","384","100"],["2023-03-01","377","88"],["2023-04-01","299","43"],["2023-05-01","361","51"],["2023-06-01","278","17"],["2023-07-01","311","0"],["2023-08-01","243","0"],["2023-09-01","278","0"],["2023-10-01","269","0"],["2023-11-01","207","0"],["2023-12-01","236","0"],["2024-01-01","294","0"],["2024-02-01","304","0"],["2024-03-01","335","0"],["2024-04-01","401","0"],["2024-05-01","473","0"],["2024-06-01","771","0"],["2024-07-01","768","29"],["2024-08-01","709","98"],["2024-09-01","679","72"],["2024-10-01","492","51"],["2024-11-01","388","40"],["2024-12-01","347","27"],["2025-01-01","407","35"],["2025-02-01","458","41"],["2025-03-01","437","56"],["2025-04-01","377","44"],["2025-05-01","339","15"],["2025-06-01","356","19"],["2025-07-01","390","26"],["2025-08-01","368","22"],["2025-09-01","282","20"],["2025-10-01","240","17"],["2025-11-01","192","10"],["2025-12-01","172","6"],["2026-01-01","215","10"],["2026-02-01","192","15"],["2026-03-01","118","7"]];
+
+const TIERS=[["1","1158","356"],["2","3598","451"],["3","3868","1311"],["4","980","97"]];
+const TIER_COLORS={"1":"#1D9E75","2":"#EF9F27","3":"#E24B4A","4":"#A32D2D"};
+
+const TYPES=[["activity","3505","1226"],["vandalism","2599","468"],["theft","1272","67"],["trespassing","1227","0"],["scam","1050","123"],["scam_rental_sent_money","1007","150"],["other","989","32"],["unknown","759","92"],["scam_rental","748","15"],["damage_vandalism","678","39"],["encounter_person_present","643","113"],["items","621","172"],["encounter_person_possible","580","63"],["uninviting_home_unlocked","568","47"],["signs_of_squatters","527","0"],["paraphernalia","421","52"],["break_in","389","101"],["uninviting_general","328","21"],["drugs","270","55"],["injury","163","38"]];
+
+const MARKETS=[["Phoenix","4113","593"],["Atlanta","2643","270"],["Dallas","2293","198"],["Los Angeles","1558","232"],["Sacramento","1294","232"],["Houston","1081","101"],["Riverside","1056","156"],["Las Vegas","800","101"],["Orlando","779","78"],["Charlotte","647","82"],["Jacksonville","641","77"],["Tampa","587","53"],["Portland","477","101"],["San Antonio","462","58"],["Raleigh","437","32"],["Tucson","429","96"],["Austin","424","57"],["Denver","400","48"],["St Louis","281","12"],["Indianapolis In","276","11"]];
+
+const SOURCES=[["security_company","5620"],["agent","5291"],["opendoor_employee","3250"],["victim","2733"],["customer","2168"],["neighbor","1983"],["cleaning_company","1495"],["other","1223"],["general_contractor","576"],["inspector","279"],["law_enforcement","240"],["appraiser","181"]];
+
+const MODES=[["unknown","3984"],["forced_entry","2802"],["no_entry","1768"],["unforced_entry","1349"],["buyer_app","1244"],["other","659"],["phone_call","67"],["sms_message","57"],["keypad_reentry","22"]];
+
+const HM=[["0","0","106"],["0","1","61"],["0","2","29"],["0","3","9"],["0","4","11"],["0","12","8"],["0","13","36"],["0","14","93"],["0","15","183"],["0","16","262"],["0","17","236"],["0","18","248"],["0","19","232"],["0","20","242"],["0","21","219"],["0","22","216"],["0","23","168"],["1","0","121"],["1","1","53"],["1","2","37"],["1","3","15"],["1","4","18"],["1","11","17"],["1","12","76"],["1","13","218"],["1","14","408"],["1","15","675"],["1","16","587"],["1","17","430"],["1","18","440"],["1","19","356"],["1","20","367"],["1","21","316"],["1","22","292"],["1","23","237"],["2","0","150"],["2","1","90"],["2","2","54"],["2","3","15"],["2","4","6"],["2","11","12"],["2","12","73"],["2","13","213"],["2","14","320"],["2","15","506"],["2","16","529"],["2","17","410"],["2","18","386"],["2","19","348"],["2","20","344"],["2","21","325"],["2","22","332"],["2","23","235"],["3","0","151"],["3","1","81"],["3","2","44"],["3","3","18"],["3","4","8"],["3","11","16"],["3","12","68"],["3","13","169"],["3","14","286"],["3","15","427"],["3","16","384"],["3","17","378"],["3","18","404"],["3","19","333"],["3","20","334"],["3","21","318"],["3","22","331"],["3","23","236"],["4","0","150"],["4","1","99"],["4","2","45"],["4","3","13"],["4","4","15"],["4","11","8"],["4","12","65"],["4","13","155"],["4","14","294"],["4","15","410"],["4","16","387"],["4","17","353"],["4","18","337"],["4","19","296"],["4","20","301"],["4","21","279"],["4","22","282"],["4","23","234"],["5","0","121"],["5","1","96"],["5","2","34"],["5","3","12"],["5","4","6"],["5","10","5"],["5","11","17"],["5","12","58"],["5","13","177"],["5","14","263"],["5","15","464"],["5","16","405"],["5","17","360"],["5","18","325"],["5","19","315"],["5","20","296"],["5","21","269"],["5","22","257"],["5","23","218"],["6","0","104"],["6","1","78"],["6","2","28"],["6","3","4"],["6","4","2"],["6","12","11"],["6","13","32"],["6","14","77"],["6","15","174"],["6","16","256"],["6","17","297"],["6","18","255"],["6","19","216"],["6","20","215"],["6","21","178"],["6","22","201"],["6","23","175"]];
+
+const SRC_COLORS={security_company:"#E24B4A",agent:"#378ADD",opendoor_employee:"#EF9F27",victim:"#7F77DD",customer:"#1D9E75",neighbor:"#BA7517",cleaning_company:"#0F6E56",other:"#888780"};
+const MODE_COLORS={unknown:"#B4B2A9",forced_entry:"#E24B4A",unforced_entry:"#EF9F27",no_entry:"#639922",buyer_app:"#378ADD",other:"#888780",phone_call:"#1D9E75",sms_message:"#BA7517",keypad_reentry:"#185FA5"};
+const MKT_COLORS=["#378ADD","#E24B4A","#1D9E75","#EF9F27","#7F77DD","#BA7517","#185FA5","#0F6E56","#D85A30","#639922"];
+const TYPE_COLORS=["#E24B4A","#EF9F27","#378ADD","#1D9E75","#7F77DD","#BA7517","#D85A30","#888780","#0F6E56","#639922","#185FA5","#A32D2D","#FAC775","#B5D4F4","#9FE1CB","#B4B2A9","#F4C0D1","#C0DD97","#FAC775","#E6F1FB"];
+
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const fmt=n=>Number(n).toLocaleString();
+const fmtK=n=>n>=1000?(n/1000).toFixed(1)+"k":String(Math.round(n));
+const fmtLabel=s=>(s||"").replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+
+// ── FILTERS ────────────────────────────────────────────────────────────────────
+const allMonths=[...new Set(TREND.map(r=>r[0]))].sort();
+function initFilters(){
+  const sd=document.getElementById('startDate'),ed=document.getElementById('endDate');
+  allMonths.forEach(m=>{sd.innerHTML+=`<option value="${m}">${m}</option>`;ed.innerHTML+=`<option value="${m}">${m}</option>`;});
+  ed.value=allMonths[allMonths.length-1];
+  TYPES.map(r=>r[0]).forEach(t=>document.getElementById('typeFilter').innerHTML+=`<option value="${t}">${fmtLabel(t)}</option>`);
+  MARKETS.map(r=>r[0]).forEach(m=>document.getElementById('marketFilter').innerHTML+=`<option value="${m}">${m}</option>`);
+}
+
+function getF(){return{start:document.getElementById('startDate').value,end:document.getElementById('endDate').value,type:document.getElementById('typeFilter').value,market:document.getElementById('marketFilter').value};}
+
+function getFiltTrend(){const f=getF();return TREND.filter(r=>r[0]>=f.start&&r[0]<=f.end);}
+
+function applyFilters(){
+  const ft=getFiltTrend();
+  const total=ft.reduce((a,r)=>a+ +r[1],0);
+  document.getElementById('filterCount').textContent=`${fmt(total)} incidents`;
+  renderCurrentTab();
+}
+
+// ── TABS ───────────────────────────────────────────────────────────────────────
+let currentTab='overview';
+const charts={};
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  currentTab=id;
+  renderCurrentTab();
+}
+
+function renderCurrentTab(){
+  if(currentTab==='overview') renderOverview();
+  else if(currentTab==='types') renderTypes();
+  else if(currentTab==='markets') renderMarkets();
+  else if(currentTab==='source') renderSource();
+  else if(currentTab==='entry') renderEntry();
+  else if(currentTab==='heatmap') renderHeatmap();
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────────
+function renderOverview(){
+  const ft=getFiltTrend();
+  const total=ft.reduce((a,r)=>a+ +r[1],0);
+  const patrol=ft.reduce((a,r)=>a+ +r[2],0);
+  const f=getF();
+  document.getElementById('ov-total').textContent=fmt(total);
+  document.getElementById('ov-range').textContent=f.start+' → '+f.end;
+  document.getElementById('ov-patrol').textContent=fmt(patrol);
+  document.getElementById('ov-patrol-pct').textContent=(total?Math.round(patrol/total*100):0)+'% of incidents';
+  const topType=f.type!=='all'?f.type:TYPES[0][0];
+  const topTypeCnt=f.type!=='all'?(TYPES.find(r=>r[0]===f.type)||TYPES[0])[1]:TYPES[0][1];
+  document.getElementById('ov-top-type').textContent=fmtLabel(topType).split(' ')[0];
+  document.getElementById('ov-top-type-cnt').textContent=fmt(+topTypeCnt)+' incidents (all time)';
+  const topMkt=f.market!=='all'?f.market:MARKETS[0][0];
+  const topMktCnt=f.market!=='all'?(MARKETS.find(r=>r[0]===f.market)||MARKETS[0])[1]:MARKETS[0][1];
+  document.getElementById('ov-top-market').textContent=topMkt;
+  document.getElementById('ov-top-market-cnt').textContent=fmt(+topMktCnt)+' incidents (all time)';
+
+  destroyChart('trend');
+  const labels=ft.map(r=>{const d=new Date(r[0]);return MONTHS[d.getMonth()]+"'"+(d.getFullYear()+"").slice(2);});
+  charts.trend=new Chart(document.getElementById('trendChart'),{type:'bar',
+    data:{labels,datasets:[{label:'Total',data:ft.map(r=>+r[1]),backgroundColor:'#B5D4F4',borderRadius:3},{label:'Patrol',data:ft.map(r=>+r[2]),backgroundColor:'#E24B4A',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:9},maxTicksLimit:16,maxRotation:45},grid:{display:false}},
+        y:{ticks:{color:'#888',font:{size:10},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  destroyChart('tier');
+  charts.tier=new Chart(document.getElementById('tierChart'),{type:'doughnut',
+    data:{labels:TIERS.map(r=>'Tier '+r[0]),datasets:[{data:TIERS.map(r=>+r[1]),backgroundColor:TIERS.map(r=>TIER_COLORS[r[0]]||'#888'),borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+  document.getElementById('tier-legend').innerHTML=TIERS.map(r=>`<div class="legend-item"><div class="sw" style="background:${TIER_COLORS[r[0]]}"></div>Tier ${r[0]} (${fmt(+r[1])})</div>`).join('');
+
+  document.getElementById('tier-table').innerHTML=TIERS.map(r=>`
+    <tr><td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${TIER_COLORS[r[0]]};flex-shrink:0"></span>Tier ${r[0]}</span></td>
+    <td>${fmt(+r[1])}</td><td>${fmt(+r[2])}</td><td>${Math.round(+r[2]/+r[1]*100)}%</td></tr>`).join('');
+}
+
+// ── TYPES ──────────────────────────────────────────────────────────────────────
+function renderTypes(){
+  const total=TYPES.reduce((a,r)=>a+ +r[1],0);
+  document.getElementById('type-metrics').innerHTML=TYPES.slice(0,4).map(r=>`
+    <div class="metric-card"><div class="metric-label">${fmtLabel(r[0])}</div>
+    <div class="metric-value">${fmt(+r[1])}</div>
+    <div class="metric-sub">${Math.round(+r[1]/total*100)}% of total</div></div>`).join('');
+
+  destroyChart('type');
+  const top=TYPES.slice(0,12);
+  charts.type=new Chart(document.getElementById('typeChart'),{type:'bar',
+    data:{labels:top.map(r=>fmtLabel(r[0])),datasets:[{data:top.map(r=>+r[1]),backgroundColor:TYPE_COLORS.slice(0,top.length),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+
+  document.getElementById('type-table').innerHTML=TYPES.map((r,i)=>`
+    <tr><td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${TYPE_COLORS[i]||'#888'};flex-shrink:0"></span>${fmtLabel(r[0])}</span></td>
+    <td>${fmt(+r[1])}</td><td>${fmt(+r[2])}</td><td style="color:var(--text2)">${Math.round(+r[2]/+r[1]*100)}%</td></tr>`).join('');
+}
+
+// ── MARKETS ────────────────────────────────────────────────────────────────────
+function renderMarkets(){
+  document.getElementById('market-metrics').innerHTML=MARKETS.slice(0,4).map(r=>`
+    <div class="metric-card"><div class="metric-label">${r[0]}</div>
+    <div class="metric-value">${fmt(+r[1])}</div>
+    <div class="metric-sub">Patrol: ${fmt(+r[2])} (${Math.round(+r[2]/+r[1]*100)}%)</div></div>`).join('');
+
+  destroyChart('market');
+  const top=MARKETS.slice(0,15);
+  charts.market=new Chart(document.getElementById('marketChart'),{type:'bar',
+    data:{labels:top.map(r=>r[0]),datasets:[{label:'Incidents',data:top.map(r=>+r[1]),backgroundColor:MKT_COLORS.map((_,i)=>MKT_COLORS[i%MKT_COLORS.length]),borderRadius:4},{label:'Patrol',data:top.map(r=>+r[2]),backgroundColor:'rgba(226,75,74,0.5)',borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,0.05)'},stacked:false},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+
+  document.getElementById('market-table').innerHTML=MARKETS.map(r=>`
+    <tr><td style="font-weight:500">${r[0]}</td><td>${fmt(+r[1])}</td>
+    <td>${fmt(+r[2])}</td><td style="color:var(--text2)">${Math.round(+r[2]/+r[1]*100)}%</td></tr>`).join('');
+}
+
+// ── SOURCE ─────────────────────────────────────────────────────────────────────
+function renderSource(){
+  const total=SOURCES.reduce((a,r)=>a+ +r[1],0);
+  document.getElementById('src-metrics').innerHTML=SOURCES.slice(0,4).map(r=>`
+    <div class="metric-card"><div class="metric-label">${fmtLabel(r[0])}</div>
+    <div class="metric-value">${fmt(+r[1])}</div>
+    <div class="metric-sub">${Math.round(+r[1]/total*100)}% of total</div></div>`).join('');
+
+  destroyChart('source');
+  const top=SOURCES.slice(0,8);
+  charts.source=new Chart(document.getElementById('sourceChart'),{type:'bar',
+    data:{labels:top.map(r=>fmtLabel(r[0])),datasets:[{data:top.map(r=>+r[1]),backgroundColor:top.map(r=>SRC_COLORS[r[0]]||'#B4B2A9'),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+
+  document.getElementById('src-table').innerHTML=SOURCES.map(r=>`
+    <tr><td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${SRC_COLORS[r[0]]||'#B4B2A9'};flex-shrink:0"></span>${fmtLabel(r[0])}</span></td>
+    <td>${fmt(+r[1])}</td><td style="color:var(--text2)">${Math.round(+r[1]/total*100)}%</td></tr>`).join('');
+}
+
+// ── ENTRY ──────────────────────────────────────────────────────────────────────
+function renderEntry(){
+  const tot=MODES.reduce((a,r)=>a+ +r[1],0);
+  document.getElementById('entry-metrics').innerHTML=MODES.slice(0,4).map(r=>`
+    <div class="metric-card"><div class="metric-label">${fmtLabel(r[0])}</div>
+    <div class="metric-value">${fmt(+r[1])}</div>
+    <div class="metric-sub">${Math.round(+r[1]/tot*100)}% of known</div></div>`).join('');
+
+  destroyChart('mode');
+  charts.mode=new Chart(document.getElementById('modeChart'),{type:'bar',
+    data:{labels:MODES.map(r=>fmtLabel(r[0])),datasets:[{data:MODES.map(r=>+r[1]),backgroundColor:MODES.map(r=>MODE_COLORS[r[0]]||'#B4B2A9'),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+
+  document.getElementById('entry-insights').innerHTML=[
+    {label:'Forced entry',val:2802,sub:'Top known entry method',color:'#E24B4A'},
+    {label:'Physical breach total',val:2802+389,sub:'Forced entry + break-in variants',color:'#D85A30'},
+    {label:'Digital / remote access',val:1244+67+57,sub:'Buyer app, phone, SMS',color:'#378ADD'},
+    {label:'Unknown entry mode',val:3984,sub:'Largest category — data gap',color:'#B4B2A9'}
+  ].map(i=>`<div style="background:var(--bg2);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;border-left:3px solid ${i.color}">
+    <p style="font-size:12px;color:var(--text2);margin-bottom:2px">${i.label}</p>
+    <p style="font-size:20px;font-weight:500">${fmt(i.val)}</p>
+    <p style="font-size:11px;color:var(--text3);margin-top:2px">${i.sub}</p></div>`).join('');
+}
+
+// ── HEATMAP ────────────────────────────────────────────────────────────────────
+function renderHeatmap(){
+  const hmMap={};
+  HM.forEach(([d,h,c])=>{hmMap[`${d}-${h}`]=+c;});
+  const hmMax=Math.max(...Object.values(hmMap));
+  const hmColor=v=>{if(!v)return'var(--bg2)';const p=v/hmMax;return p>.7?'#E24B4A':p>.4?'#EF9F27':p>.15?'#FAC775':'#EAF3DE';};
+
+  const grid=document.getElementById('hm-grid');
+  grid.innerHTML='';
+  const blank=document.createElement('div');grid.appendChild(blank);
+  for(let h=0;h<24;h++){const d=document.createElement('div');d.style.textAlign='center';d.style.paddingBottom='3px';d.textContent=h;grid.appendChild(d);}
+  DAYS.forEach((day,dow)=>{
+    const dl=document.createElement('div');dl.style.cssText='display:flex;align-items:center;font-size:11px;color:var(--text2)';dl.textContent=day;grid.appendChild(dl);
+    for(let h=0;h<24;h++){
+      const v=hmMap[`${dow}-${h}`]||0;
+      const cell=document.createElement('div');
+      cell.style.cssText=`height:26px;border-radius:2px;background:${hmColor(v)};cursor:default`;
+      cell.title=`${day} ${h}:00 — ${v} incidents`;
+      grid.appendChild(cell);
+    }
+  });
+
+  const hb=document.getElementById('hour-bars');hb.innerHTML='';
+  const hourTots=Array.from({length:24},(_,h)=>DAYS.reduce((_,__,d)=>_+(hmMap[`${d}-${h}`]||0),0));
+  const hMax=Math.max(...hourTots);
+  hourTots.forEach((tot,h)=>{
+    const fill=tot/hMax;const col=fill>.7?'#E24B4A':fill>.4?'#EF9F27':'#B5D4F4';
+    hb.innerHTML+=`<div class="hbar-row"><span class="hbar-label">${h}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(fill*100)}%;background:${col}"></div></div><span class="hbar-val">${fmtK(tot)}</span></div>`;
+  });
+
+  const db=document.getElementById('day-bars');db.innerHTML='';
+  const dayTots=DAYS.map((_,dow)=>Array.from({length:24},(__,h)=>hmMap[`${dow}-${h}`]||0).reduce((a,b)=>a+b,0));
+  const dMax=Math.max(...dayTots);
+  DAYS.forEach((day,i)=>{
+    db.innerHTML+=`<div class="hbar-row" style="margin-bottom:8px"><span style="font-size:12px;color:var(--text2);width:28px">${day}</span><div class="hbar-track" style="height:16px"><div class="hbar-fill" style="width:${Math.round(dayTots[i]/dMax*100)}%;background:#378ADD"></div></div><span style="font-size:12px;font-weight:500;width:40px;text-align:right">${fmtK(dayTots[i])}</span></div>`;
+  });
+}
+
+// ── EXPORT ─────────────────────────────────────────────────────────────────────
+function exportCSV(){
+  const ft=getFiltTrend();
+  const rows=[['month','total_incidents','patrol_dispatched'],...ft.map(r=>r)];
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.map(r=>r.join(',')).join('\n'));
+  a.download='opendoor_incident_reports.csv';a.click();
+}
+
+// ── BOOT ───────────────────────────────────────────────────────────────────────
+initFilters();applyFilters();renderHeatmap();
+</script>
+</body>
+</html>
