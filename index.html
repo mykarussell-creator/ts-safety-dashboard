@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Trust & Safety Dashboard — Opendoor Incident Reports</title>
+<title>Trust &amp; Safety Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#fff;--bg2:#f5f5f3;--bg3:#efefed;--text:#1a1a18;--text2:#6b6b67;--text3:#9b9b97;--border:rgba(0,0,0,0.12);--r:8px;--rl:12px}
+:root{--bg:#fff;--bg2:#f5f5f3;--text:#1a1a18;--text2:#6b6b67;--text3:#9b9b97;--border:rgba(0,0,0,0.12);--r:8px;--rl:12px}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f0efeb;color:var(--text);font-size:14px;min-height:100vh}
 .hdr{background:var(--bg);border-bottom:0.5px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:100}
 .logo{font-size:15px;font-weight:600}.logo span{color:#378ADD}
@@ -35,7 +35,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .ct{font-size:13px;font-weight:500;margin-bottom:12px}
 .g2{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:14px;margin-bottom:14px}
 .g22{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--text2);font-weight:500;text-align:left;padding:5px 8px;border-bottom:0.5px solid var(--border);font-size:11px}
 td{padding:7px 8px;border-bottom:0.5px solid var(--border)}
@@ -45,15 +44,10 @@ tr:last-child td{border-bottom:none}
 .sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .tp{display:none}.tp.active{display:block}
 .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500}
-.b-green{background:#EAF3DE;color:#3B6D11}
-.b-amber{background:#FAEEDA;color:#854F0B}
-.b-red{background:#FCEBEB;color:#A32D2D}
-.b-blue{background:#E6F1FB;color:#185FA5}
-.hbar-r{display:flex;align-items:center;gap:8px;margin-bottom:3px}
-.hbar-l{font-size:10px;color:var(--text3);width:20px;text-align:right}
-.hbar-t{flex:1;background:var(--bg2);border-radius:3px;height:10px;overflow:hidden}
-.hbar-f{height:100%;border-radius:3px}
-.hbar-v{font-size:10px;color:var(--text2);width:36px;text-align:right}
+.bg{background:#EAF3DE;color:#3B6D11}
+.ba{background:#FAEEDA;color:#854F0B}
+.br{background:#FCEBEB;color:#A32D2D}
+.bb{background:#E6F1FB;color:#185FA5}
 .insight{background:var(--bg2);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;border-left:3px solid}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px}
@@ -62,7 +56,7 @@ tr:last-child td{border-bottom:none}
 <body>
 <div class="hdr">
   <div class="logo">Opendoor <span>Trust &amp; Safety</span></div>
-  <div class="hdr-sub">3 Snowflake sources · through Mar 19, 2026</div>
+  <div class="hdr-sub">4 Snowflake sources &middot; through Mar 19, 2026</div>
   <div class="hdr-r">
     <div class="dot"></div><span class="live">Live</span>
     <button class="btn" onclick="exportCSV()">Export CSV</button>
@@ -74,7 +68,7 @@ tr:last-child td{border-bottom:none}
   <div class="fbar">
     <label>Date range</label>
     <select id="sd" onchange="applyF()"></select>
-    <span style="font-size:12px;color:var(--text3)">→</span>
+    <span style="font-size:12px;color:var(--text3)">to</span>
     <select id="ed" onchange="applyF()"></select>
     <span style="font-size:12px;color:var(--text3);margin-left:8px">|</span>
     <label style="margin-left:8px">Incident type</label>
@@ -88,6 +82,7 @@ tr:last-child td{border-bottom:none}
     <button class="tb active" onclick="showTab('overview',this)">Overview</button>
     <button class="tb" onclick="showTab('rate',this)">Incident rate</button>
     <button class="tb" onclick="showTab('knox',this)">Knox intelligence</button>
+    <button class="tb" onclick="showTab('patrol',this)">Patrol &amp; dispatch</button>
     <button class="tb" onclick="showTab('types',this)">Incident types</button>
     <button class="tb" onclick="showTab('markets',this)">Markets</button>
     <button class="tb" onclick="showTab('source',this)">Reporter source</button>
@@ -95,16 +90,17 @@ tr:last-child td{border-bottom:none}
     <button class="tb" onclick="showTab('heatmap',this)">Activity heatmap</button>
   </div>
 
+  <!-- OVERVIEW -->
   <div id="tab-overview" class="tp active">
     <div class="mg">
-      <div class="mc"><div class="ml">Incidents in range</div><div class="mv" id="ov-total">—</div><div class="ms" id="ov-range">—</div></div>
-      <div class="mc"><div class="ml">Patrol dispatched</div><div class="mv" id="ov-patrol">—</div><div class="ms" id="ov-pp">—</div></div>
-      <div class="mc"><div class="ml">Top incident type</div><div class="mv" id="ov-type">—</div><div class="ms" id="ov-type-s">—</div></div>
-      <div class="mc"><div class="ml">Top market</div><div class="mv" id="ov-mkt">—</div><div class="ms" id="ov-mkt-s">—</div></div>
+      <div class="mc"><div class="ml">Incidents in range</div><div class="mv" id="ov-total">-</div><div class="ms" id="ov-range">-</div></div>
+      <div class="mc"><div class="ml">Patrol dispatched</div><div class="mv" id="ov-patrol">-</div><div class="ms" id="ov-pp">-</div></div>
+      <div class="mc"><div class="ml">Top incident type</div><div class="mv" id="ov-type">-</div><div class="ms" id="ov-type-s">-</div></div>
+      <div class="mc"><div class="ml">Top market</div><div class="mv" id="ov-mkt">-</div><div class="ms" id="ov-mkt-s">-</div></div>
     </div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Monthly volume — total vs patrol dispatched</div>
+        <div class="ct">Monthly volume - total vs patrol dispatched</div>
         <div class="lg"><div class="li"><div class="sw" style="background:#B5D4F4"></div>Total</div><div class="li"><div class="sw" style="background:#E24B4A"></div>Patrol dispatched</div></div>
         <div style="position:relative;width:100%;height:230px"><canvas id="trendC"></canvas></div>
       </div>
@@ -115,39 +111,41 @@ tr:last-child td{border-bottom:none}
       </div>
     </div>
     <div class="card">
-      <div class="ct">Tier breakdown — count &amp; patrol</div>
+      <div class="ct">Tier breakdown - count and patrol</div>
       <table><thead><tr><th>Tier</th><th>Incidents</th><th>Patrol dispatched</th><th>Patrol %</th></tr></thead><tbody id="tier-tb"></tbody></table>
     </div>
   </div>
 
+  <!-- INCIDENT RATE -->
   <div id="tab-rate" class="tp">
     <div class="mg">
-      <div class="mc"><div class="ml">Avg incident rate (last 90d)</div><div class="mv" id="rate-cur">—</div><div class="ms">Incidents per active listing</div></div>
+      <div class="mc"><div class="ml">Avg incident rate (last 90d)</div><div class="mv" id="rate-cur">-</div><div class="ms">Incidents per active listing</div></div>
       <div class="mc"><div class="ml">Peak rate (all time)</div><div class="mv">11.35%</div><div class="ms">Sep 2024</div></div>
-      <div class="mc"><div class="ml">Rate trend (2025)</div><div class="mv" style="color:#1D9E75">↓ Declining</div><div class="ms">vs 2024 peak</div></div>
+      <div class="mc"><div class="ml">Rate trend (2025)</div><div class="mv" style="color:#1D9E75">Declining</div><div class="ms">vs 2024 peak</div></div>
       <div class="mc"><div class="ml">Highest rate market</div><div class="mv">NY/NJ</div><div class="ms">22.6% (last 90d)</div></div>
     </div>
     <div class="card">
-      <div class="ct">Normalized incident rate over time — incidents per active listing (%)</div>
+      <div class="ct">Normalized incident rate over time - incidents per active listing (%)</div>
       <div class="lg"><div class="li"><div class="sw" style="background:#7F77DD"></div>Avg incident rate</div><div class="li"><div class="sw" style="background:#B5D4F4"></div>Raw incident count</div></div>
       <div style="position:relative;width:100%;height:260px"><canvas id="rateC"></canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Current incident rate by market — last 90 days (top 20)</div>
+      <div class="ct">Current incident rate by market - last 90 days (top 20)</div>
       <div style="position:relative;width:100%;height:320px"><canvas id="rateMktC"></canvas></div>
     </div>
   </div>
 
+  <!-- KNOX -->
   <div id="tab-knox" class="tp">
     <div class="mg">
-      <div class="mc"><div class="ml">Avg incident index</div><div class="mv" id="knox-idx">2.63</div><div class="ms">No security system</div></div>
-      <div class="mc"><div class="ml">SmartRent avg index</div><div class="mv" style="color:#1D9E75">2.31</div><div class="ms">↓ 12% vs no system</div></div>
-      <div class="mc"><div class="ml">Knox avg index</div><div class="mv" style="color:#1D9E75">1.76</div><div class="ms">↓ 33% vs no system</div></div>
+      <div class="mc"><div class="ml">Avg incident index</div><div class="mv">2.63</div><div class="ms">No security system</div></div>
+      <div class="mc"><div class="ml">SmartRent avg index</div><div class="mv" style="color:#1D9E75">2.31</div><div class="ms">12% lower severity</div></div>
+      <div class="mc"><div class="ml">Knox avg index</div><div class="mv" style="color:#1D9E75">1.76</div><div class="ms">33% lower severity</div></div>
       <div class="mc"><div class="ml">Reclassified (2026)</div><div class="mv">32%</div><div class="ms">Reported vs ALFRED current tier</div></div>
     </div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Monthly incident index &amp; reclassification rate (2023–2026)</div>
+        <div class="ct">Monthly incident index and reclassification rate (2023-2026)</div>
         <div class="lg">
           <div class="li"><div class="sw" style="background:#7F77DD"></div>Avg incident index</div>
           <div class="li"><div class="sw" style="background:#EF9F27"></div>Reclassification rate %</div>
@@ -156,37 +154,64 @@ tr:last-child td{border-bottom:none}
       </div>
       <div class="card">
         <div class="ct">Security system impact</div>
-        <div style="margin-bottom:12px">
-          <div class="insight" style="border-left-color:#E24B4A">
-            <p style="font-size:12px;color:var(--text2);margin-bottom:3px">No security system</p>
-            <p style="font-size:20px;font-weight:500">24,094 incidents</p>
-            <p style="font-size:11px;color:var(--text3);margin-top:2px">Avg index: 2.63 · Patrol: 2,853</p>
-          </div>
-          <div class="insight" style="border-left-color:#EF9F27">
-            <p style="font-size:12px;color:var(--text2);margin-bottom:3px">SmartRent installed</p>
-            <p style="font-size:20px;font-weight:500">1,051 incidents</p>
-            <p style="font-size:11px;color:var(--text3);margin-top:2px">Avg index: 2.31 · Patrol: 112 · <strong>↓12% severity</strong></p>
-          </div>
-          <div class="insight" style="border-left-color:#1D9E75">
-            <p style="font-size:12px;color:var(--text2);margin-bottom:3px">Knox security installed</p>
-            <p style="font-size:20px;font-weight:500">21 incidents</p>
-            <p style="font-size:11px;color:var(--text3);margin-top:2px">Avg index: 1.76 · Patrol: 4 · <strong>↓33% severity</strong></p>
-          </div>
-        </div>
-        <div class="ct" style="margin-top:4px">ALFRED tier reclassification</div>
-        <p style="font-size:12px;color:var(--text2);margin-bottom:8px">ALFRED reviews reported tiers and adjusts them. High reclassification rates indicate triage accuracy issues.</p>
-        <div style="position:relative;width:100%;height:100px"><canvas id="reclassC"></canvas></div>
+        <div id="knox-ins"></div>
       </div>
     </div>
     <div class="card">
-      <div class="ct">ALFRED reported vs current tier — incident count by tier pair</div>
-      <table>
-        <thead><tr><th>Reported tier</th><th>Current tier</th><th>Incidents</th><th>Avg incident index</th><th>Status</th></tr></thead>
-        <tbody id="alfred-tb"></tbody>
-      </table>
+      <div class="ct">ALFRED reported vs current tier</div>
+      <table><thead><tr><th>Reported tier</th><th>Current tier</th><th>Incidents</th><th>Avg index</th><th>Status</th></tr></thead>
+      <tbody id="alfred-tb"></tbody></table>
     </div>
   </div>
 
+  <!-- PATROL -->
+  <div id="tab-patrol" class="tp">
+    <div class="mg">
+      <div class="mc"><div class="ml">Total dispatches (2022-2026)</div><div class="mv">144k</div><div class="ms">ADMIRAL.PATROL_DISPATCH_RESPONSES</div></div>
+      <div class="mc"><div class="ml">Incidents found rate</div><div class="mv" style="color:#E24B4A">8.9%</div><div class="ms">Of completed dispatches</div></div>
+      <div class="mc"><div class="ml">Cancellation rate</div><div class="mv">7.2%</div><div class="ms">2023-2026</div></div>
+      <div class="mc"><div class="ml">Avg response time</div><div class="mv">95 min</div><div class="ms">Dispatch to arrival (2025)</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Monthly dispatches vs incidents found (2022-2026)</div>
+        <div class="lg">
+          <div class="li"><div class="sw" style="background:#B5D4F4"></div>Total dispatches</div>
+          <div class="li"><div class="sw" style="background:#E24B4A"></div>Incidents found</div>
+          <div class="li"><div class="sw" style="background:#EF9F27"></div>Not accessible</div>
+        </div>
+        <div style="position:relative;width:100%;height:230px"><canvas id="patrolTrendC"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Response type breakdown</div>
+        <div style="position:relative;width:100%;height:160px"><canvas id="patrolTypeC"></canvas></div>
+        <div class="lg" style="margin-top:8px">
+          <div class="li"><div class="sw" style="background:#378ADD"></div>Alarm Response (79,324)</div>
+          <div class="li"><div class="sw" style="background:#1D9E75"></div>Patrol Inspection (50,297)</div>
+        </div>
+      </div>
+    </div>
+    <div class="g22">
+      <div class="card">
+        <div class="ct">Incident categories found on patrol</div>
+        <div style="position:relative;width:100%;height:300px"><canvas id="patrolCatC"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Avg response time trend - dispatch to arrival (min)</div>
+        <div style="position:relative;width:100%;height:260px"><canvas id="patrolRespC"></canvas></div>
+        <p style="font-size:11px;color:var(--text3);margin-top:8px">Outlier months excluded (data entry errors).</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Securitas branch performance - 2023 to present</div>
+      <div style="max-height:380px;overflow-y:auto">
+        <table><thead><tr><th>Branch</th><th>Dispatches</th><th>Incidents</th><th>Incident %</th><th>Avg response</th><th>Not accessible</th><th>Law enforcement</th></tr></thead>
+        <tbody id="patrol-branch-tb"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPES -->
   <div id="tab-types" class="tp">
     <div class="mg" id="type-mg"></div>
     <div class="g22">
@@ -195,6 +220,7 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
 
+  <!-- MARKETS -->
   <div id="tab-markets" class="tp">
     <div class="mg" id="mkt-mg"></div>
     <div class="g22">
@@ -203,6 +229,7 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
 
+  <!-- SOURCE -->
   <div id="tab-source" class="tp">
     <div class="mg" id="src-mg"></div>
     <div class="g22">
@@ -211,6 +238,7 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
 
+  <!-- ENTRY -->
   <div id="tab-entry" class="tp">
     <div class="mg" id="entry-mg"></div>
     <div class="g22">
@@ -219,15 +247,16 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
 
+  <!-- HEATMAP -->
   <div id="tab-heatmap" class="tp">
     <div class="mg">
-      <div class="mc"><div class="ml">Peak day</div><div class="mv">Mon–Wed</div><div class="ms">Highest weekly volume</div></div>
-      <div class="mc"><div class="ml">Peak hours</div><div class="mv">3–6 PM</div><div class="ms">Consistent across days</div></div>
-      <div class="mc"><div class="ml">Quietest time</div><div class="mv">4–7 AM</div><div class="ms">Lowest incident rate</div></div>
-      <div class="mc"><div class="ml">Weekend vs weekday</div><div class="mv">–45%</div><div class="ms">Weekend avg vs weekday</div></div>
+      <div class="mc"><div class="ml">Peak day</div><div class="mv">Mon-Wed</div><div class="ms">Highest weekly volume</div></div>
+      <div class="mc"><div class="ml">Peak hours</div><div class="mv">3-6 PM</div><div class="ms">Consistent across days</div></div>
+      <div class="mc"><div class="ml">Quietest time</div><div class="mv">4-7 AM</div><div class="ms">Lowest incident rate</div></div>
+      <div class="mc"><div class="ml">Weekend vs weekday</div><div class="mv">-45%</div><div class="ms">Weekend avg vs weekday</div></div>
     </div>
     <div class="card">
-      <div class="ct">Volume — day of week × hour of day</div>
+      <div class="ct">Volume - day of week x hour of day</div>
       <div id="hmg" style="display:grid;grid-template-columns:36px repeat(24,1fr);gap:2px;font-size:9px;color:var(--text3)"></div>
       <div class="lg" style="margin-top:10px">
         <div class="li"><div class="sw" style="background:#EAF3DE"></div>Low</div>
@@ -244,237 +273,332 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────────────────────────
-const TREND=[["2021-01-01","43","9"],["2021-02-01","35","10"],["2021-03-01","41","15"],["2021-04-01","53","15"],["2021-05-01","75","24"],["2021-06-01","140","35"],["2021-07-01","161","45"],["2021-08-01","261","65"],["2021-09-01","264","58"],["2021-10-01","365","118"],["2021-11-01","371","80"],["2021-12-01","378","94"],["2022-01-01","414","99"],["2022-02-01","480","100"],["2022-03-01","717","101"],["2022-04-01","597","70"],["2022-05-01","677","98"],["2022-06-01","643","105"],["2022-07-01","1056","136"],["2022-08-01","1099","158"],["2022-09-01","988","160"],["2022-10-01","826","126"],["2022-11-01","687","82"],["2022-12-01","506","97"],["2023-01-01","498","110"],["2023-02-01","384","100"],["2023-03-01","377","88"],["2023-04-01","299","43"],["2023-05-01","361","51"],["2023-06-01","278","17"],["2023-07-01","311","0"],["2023-08-01","243","0"],["2023-09-01","278","0"],["2023-10-01","269","0"],["2023-11-01","207","0"],["2023-12-01","236","0"],["2024-01-01","294","0"],["2024-02-01","304","0"],["2024-03-01","335","0"],["2024-04-01","401","0"],["2024-05-01","473","0"],["2024-06-01","771","0"],["2024-07-01","768","29"],["2024-08-01","709","98"],["2024-09-01","679","72"],["2024-10-01","492","51"],["2024-11-01","388","40"],["2024-12-01","347","27"],["2025-01-01","407","35"],["2025-02-01","458","41"],["2025-03-01","437","56"],["2025-04-01","377","44"],["2025-05-01","339","15"],["2025-06-01","356","19"],["2025-07-01","390","26"],["2025-08-01","368","22"],["2025-09-01","282","20"],["2025-10-01","240","17"],["2025-11-01","192","10"],["2025-12-01","172","6"],["2026-01-01","215","10"],["2026-02-01","192","15"],["2026-03-01","118","7"]];
+var TREND=[["2021-01-01","43","9"],["2021-02-01","35","10"],["2021-03-01","41","15"],["2021-04-01","53","15"],["2021-05-01","75","24"],["2021-06-01","140","35"],["2021-07-01","161","45"],["2021-08-01","261","65"],["2021-09-01","264","58"],["2021-10-01","365","118"],["2021-11-01","371","80"],["2021-12-01","378","94"],["2022-01-01","414","99"],["2022-02-01","480","100"],["2022-03-01","717","101"],["2022-04-01","597","70"],["2022-05-01","677","98"],["2022-06-01","643","105"],["2022-07-01","1056","136"],["2022-08-01","1099","158"],["2022-09-01","988","160"],["2022-10-01","826","126"],["2022-11-01","687","82"],["2022-12-01","506","97"],["2023-01-01","498","110"],["2023-02-01","384","100"],["2023-03-01","377","88"],["2023-04-01","299","43"],["2023-05-01","361","51"],["2023-06-01","278","17"],["2023-07-01","311","0"],["2023-08-01","243","0"],["2023-09-01","278","0"],["2023-10-01","269","0"],["2023-11-01","207","0"],["2023-12-01","236","0"],["2024-01-01","294","0"],["2024-02-01","304","0"],["2024-03-01","335","0"],["2024-04-01","401","0"],["2024-05-01","473","0"],["2024-06-01","771","0"],["2024-07-01","768","29"],["2024-08-01","709","98"],["2024-09-01","679","72"],["2024-10-01","492","51"],["2024-11-01","388","40"],["2024-12-01","347","27"],["2025-01-01","407","35"],["2025-02-01","458","41"],["2025-03-01","437","56"],["2025-04-01","377","44"],["2025-05-01","339","15"],["2025-06-01","356","19"],["2025-07-01","390","26"],["2025-08-01","368","22"],["2025-09-01","282","20"],["2025-10-01","240","17"],["2025-11-01","192","10"],["2025-12-01","172","6"],["2026-01-01","215","10"],["2026-02-01","192","15"],["2026-03-01","118","7"]];
 
-const RATE=[["2021-01-01","0.0079"],["2021-02-01","0.0081"],["2021-03-01","0.0098"],["2021-04-01","0.0078"],["2021-05-01","0.0085"],["2021-06-01","0.0115"],["2021-07-01","0.0081"],["2021-08-01","0.0094"],["2021-09-01","0.0099"],["2021-10-01","0.0089"],["2021-11-01","0.0110"],["2021-12-01","0.0126"],["2022-01-01","0.0102"],["2022-02-01","0.0156"],["2022-03-01","0.0242"],["2022-04-01","0.0225"],["2022-05-01","0.0261"],["2022-06-01","0.0270"],["2022-07-01","0.0272"],["2022-08-01","0.0361"],["2022-09-01","0.0386"],["2022-10-01","0.0319"],["2022-11-01","0.0348"],["2022-12-01","0.0355"],["2023-01-01","0.0163"],["2023-02-01","0.0220"],["2023-03-01","0.0275"],["2023-04-01","0.0268"],["2023-05-01","0.0339"],["2023-06-01","0.0371"],["2023-07-01","0.0370"],["2023-08-01","0.0446"],["2023-09-01","0.0554"],["2023-10-01","0.0437"],["2023-11-01","0.0492"],["2023-12-01","0.0514"],["2024-01-01","0.0302"],["2024-02-01","0.0421"],["2024-03-01","0.0479"],["2024-04-01","0.0451"],["2024-05-01","0.0577"],["2024-06-01","0.0850"],["2024-07-01","0.0855"],["2024-08-01","0.1007"],["2024-09-01","0.1135"],["2024-10-01","0.0900"],["2024-11-01","0.0948"],["2024-12-01","0.0910"],["2025-01-01","0.0339"],["2025-02-01","0.0550"],["2025-03-01","0.0656"],["2025-04-01","0.0542"],["2025-05-01","0.0619"],["2025-06-01","0.0735"],["2025-07-01","0.0799"],["2025-08-01","0.0980"],["2025-09-01","0.1099"],["2025-10-01","0.0912"],["2025-11-01","0.0949"],["2025-12-01","0.0902"],["2026-01-01","0.0463"],["2026-02-01","0.0518"],["2026-03-01","0.0552"]];
+var RATE=[["2021-01-01","0.0079"],["2021-06-01","0.0115"],["2021-12-01","0.0126"],["2022-03-01","0.0242"],["2022-06-01","0.0270"],["2022-08-01","0.0361"],["2022-09-01","0.0386"],["2022-12-01","0.0355"],["2023-03-01","0.0275"],["2023-06-01","0.0371"],["2023-08-01","0.0446"],["2023-09-01","0.0554"],["2023-12-01","0.0514"],["2024-01-01","0.0302"],["2024-03-01","0.0479"],["2024-06-01","0.0850"],["2024-07-01","0.0855"],["2024-08-01","0.1007"],["2024-09-01","0.1135"],["2024-10-01","0.0900"],["2024-12-01","0.0910"],["2025-01-01","0.0339"],["2025-03-01","0.0656"],["2025-06-01","0.0735"],["2025-08-01","0.0980"],["2025-09-01","0.1099"],["2025-12-01","0.0902"],["2026-01-01","0.0463"],["2026-02-01","0.0518"],["2026-03-01","0.0552"]];
 
-const RATE_MKT=[["New York New Jersey","0.2257"],["Riverside","0.1541"],["Sacramento","0.1540"],["Albuquerque Nm","0.1393"],["Oklahoma City Ok","0.1117"],["St Louis","0.1104"],["Detroit Mi","0.1062"],["Columbus Oh","0.1044"],["Kansas City","0.1013"],["Cincinnati Oh","0.0984"],["San Diego Ca","0.0979"],["Richmond Va","0.0955"],["Charleston Sc","0.0892"],["Northern Colorado","0.0853"],["Salt Lake City","0.0836"],["Minneapolis","0.0834"],["Phoenix","0.0717"],["Las Vegas","0.0711"],["Colorado Springs Co","0.0685"],["Austin","0.0676"]];
+var RATE_MKT=[["New York New Jersey","0.2257"],["Riverside","0.1541"],["Sacramento","0.1540"],["Albuquerque Nm","0.1393"],["Oklahoma City Ok","0.1117"],["St Louis","0.1104"],["Detroit Mi","0.1062"],["Columbus Oh","0.1044"],["Kansas City","0.1013"],["Cincinnati Oh","0.0984"],["San Diego Ca","0.0979"],["Richmond Va","0.0955"],["Charleston Sc","0.0892"],["Northern Colorado","0.0853"],["Salt Lake City","0.0836"],["Minneapolis","0.0834"],["Phoenix","0.0717"],["Las Vegas","0.0711"],["Colorado Springs Co","0.0685"],["Austin","0.0676"]];
 
-const KNOX_MONTHLY=[["2023-01-01","498","148","4.83"],["2023-02-01","384","106","4.57"],["2023-03-01","377","124","3.97"],["2023-04-01","299","96","3.00"],["2023-05-01","361","134","2.84"],["2023-06-01","278","89","2.98"],["2023-07-01","311","78","2.23"],["2023-08-01","243","45","1.80"],["2023-09-01","278","64","2.35"],["2023-10-01","269","54","1.86"],["2023-11-01","207","42","2.11"],["2023-12-01","236","54","1.97"],["2024-01-01","294","46","1.85"],["2024-02-01","303","71","1.85"],["2024-03-01","335","80","1.93"],["2024-04-01","400","110","1.79"],["2024-05-01","473","79","1.94"],["2024-06-01","771","118","1.82"],["2024-07-01","768","173","2.08"],["2024-08-01","708","149","1.97"],["2024-09-01","679","163","2.12"],["2024-10-01","492","125","2.16"],["2024-11-01","388","111","2.35"],["2024-12-01","347","95","2.41"],["2025-01-01","407","114","2.32"],["2025-02-01","458","119","2.32"],["2025-03-01","437","109","2.16"],["2025-04-01","377","97","1.89"],["2025-05-01","339","69","1.95"],["2025-06-01","356","109","1.94"],["2025-07-01","390","107","1.99"],["2025-08-01","368","115","1.89"],["2025-09-01","282","78","2.02"],["2025-10-01","240","73","2.07"],["2025-11-01","192","65","2.09"],["2025-12-01","172","57","2.04"],["2026-01-01","215","68","1.83"],["2026-02-01","192","55","1.65"],["2026-03-01","165","49","1.61"]];
+var KNOX_M=[["2023-01-01","498","148","4.83"],["2023-04-01","299","96","3.00"],["2023-07-01","311","78","2.23"],["2023-10-01","269","54","1.86"],["2024-01-01","294","46","1.85"],["2024-04-01","400","110","1.79"],["2024-07-01","768","173","2.08"],["2024-10-01","492","125","2.16"],["2025-01-01","407","114","2.32"],["2025-04-01","377","97","1.89"],["2025-07-01","390","107","1.99"],["2025-10-01","240","73","2.07"],["2026-01-01","215","68","1.83"],["2026-03-01","165","49","1.61"]];
 
-const ALFRED=[["3","","1956","2.86"],["0","","1876","2.32"],["2","","1839","1.81"],["3","3","1611","2.20"],["4","4","1498","2.32"],["6","","1426","2.39"],["8","","1368","3.99"],["8","5","1104","5.61"],["4","","897","2.19"],["8","6","865","2.50"],["0","5","822","2.25"],["5","","818","2.72"],["2","2","704","1.73"],["0","0","691","2.46"],["6","6","569","3.24"]];
+var ALFRED=[["3","","1956","2.86"],["0","","1876","2.32"],["2","","1839","1.81"],["3","3","1611","2.20"],["4","4","1498","2.32"],["6","","1426","2.39"],["8","","1368","3.99"],["8","5","1104","5.61"],["4","","897","2.19"],["8","6","865","2.50"],["0","5","822","2.25"],["2","2","704","1.73"]];
 
-const TIERS=[["1","1158","356"],["2","3598","451"],["3","3868","1311"],["4","980","97"]];
-const TC={"1":"#1D9E75","2":"#EF9F27","3":"#E24B4A","4":"#A32D2D"};
+var TIERS=[["1","1158","356"],["2","3598","451"],["3","3868","1311"],["4","980","97"]];
+var TC={"1":"#1D9E75","2":"#EF9F27","3":"#E24B4A","4":"#A32D2D"};
 
-const TYPES=[["activity","3505","1226"],["vandalism","2599","468"],["theft","1272","67"],["trespassing","1227","0"],["scam","1050","123"],["scam_rental_sent_money","1007","150"],["other","989","32"],["unknown","759","92"],["scam_rental","748","15"],["damage_vandalism","678","39"],["encounter_person_present","643","113"],["items","621","172"],["encounter_person_possible","580","63"],["uninviting_home_unlocked","568","47"],["signs_of_squatters","527","0"],["paraphernalia","421","52"],["break_in","389","101"],["uninviting_general","328","21"],["drugs","270","55"],["injury","163","38"]];
+var TYPES=[["activity","3505","1226"],["vandalism","2599","468"],["theft","1272","67"],["trespassing","1227","0"],["scam","1050","123"],["scam_rental_sent_money","1007","150"],["other","989","32"],["unknown","759","92"],["scam_rental","748","15"],["damage_vandalism","678","39"],["encounter_person_present","643","113"],["items","621","172"],["encounter_person_possible","580","63"],["uninviting_home_unlocked","568","47"],["signs_of_squatters","527","0"],["paraphernalia","421","52"],["break_in","389","101"],["drugs","270","55"],["injury","163","38"]];
 
-const MARKETS=[["Phoenix","4113","593"],["Atlanta","2643","270"],["Dallas","2293","198"],["Los Angeles","1558","232"],["Sacramento","1294","232"],["Houston","1081","101"],["Riverside","1056","156"],["Las Vegas","800","101"],["Orlando","779","78"],["Charlotte","647","82"],["Jacksonville","641","77"],["Tampa","587","53"],["Portland","477","101"],["San Antonio","462","58"],["Raleigh","437","32"],["Tucson","429","96"],["Austin","424","57"],["Denver","400","48"],["St Louis","281","12"],["Indianapolis In","276","11"]];
+var MARKETS=[["Phoenix","4113","593"],["Atlanta","2643","270"],["Dallas","2293","198"],["Los Angeles","1558","232"],["Sacramento","1294","232"],["Houston","1081","101"],["Riverside","1056","156"],["Las Vegas","800","101"],["Orlando","779","78"],["Charlotte","647","82"],["Jacksonville","641","77"],["Tampa","587","53"],["Portland","477","101"],["San Antonio","462","58"],["Raleigh","437","32"],["Tucson","429","96"],["Austin","424","57"],["Denver","400","48"],["St Louis","281","12"],["Indianapolis In","276","11"]];
 
-const SOURCES=[["security_company","5620"],["agent","5291"],["opendoor_employee","3250"],["victim","2733"],["customer","2168"],["neighbor","1983"],["cleaning_company","1495"],["other","1223"],["general_contractor","576"],["inspector","279"],["law_enforcement","240"],["appraiser","181"]];
+var SOURCES=[["security_company","5620"],["agent","5291"],["opendoor_employee","3250"],["victim","2733"],["customer","2168"],["neighbor","1983"],["cleaning_company","1495"],["other","1223"],["general_contractor","576"],["inspector","279"],["law_enforcement","240"],["appraiser","181"]];
 
-const MODES=[["unknown","3984"],["forced_entry","2802"],["no_entry","1768"],["unforced_entry","1349"],["buyer_app","1244"],["other","659"],["phone_call","67"],["sms_message","57"],["keypad_reentry","22"]];
+var MODES=[["unknown","3984"],["forced_entry","2802"],["no_entry","1768"],["unforced_entry","1349"],["buyer_app","1244"],["other","659"],["phone_call","67"],["sms_message","57"],["keypad_reentry","22"]];
 
-const HM=[["0","0","106"],["0","1","61"],["0","2","29"],["0","3","9"],["0","4","11"],["0","12","8"],["0","13","36"],["0","14","93"],["0","15","183"],["0","16","262"],["0","17","236"],["0","18","248"],["0","19","232"],["0","20","242"],["0","21","219"],["0","22","216"],["0","23","168"],["1","0","121"],["1","1","53"],["1","2","37"],["1","3","15"],["1","4","18"],["1","11","17"],["1","12","76"],["1","13","218"],["1","14","408"],["1","15","675"],["1","16","587"],["1","17","430"],["1","18","440"],["1","19","356"],["1","20","367"],["1","21","316"],["1","22","292"],["1","23","237"],["2","0","150"],["2","1","90"],["2","2","54"],["2","3","15"],["2","4","6"],["2","11","12"],["2","12","73"],["2","13","213"],["2","14","320"],["2","15","506"],["2","16","529"],["2","17","410"],["2","18","386"],["2","19","348"],["2","20","344"],["2","21","325"],["2","22","332"],["2","23","235"],["3","0","151"],["3","1","81"],["3","2","44"],["3","3","18"],["3","4","8"],["3","11","16"],["3","12","68"],["3","13","169"],["3","14","286"],["3","15","427"],["3","16","384"],["3","17","378"],["3","18","404"],["3","19","333"],["3","20","334"],["3","21","318"],["3","22","331"],["3","23","236"],["4","0","150"],["4","1","99"],["4","2","45"],["4","3","13"],["4","4","15"],["4","11","8"],["4","12","65"],["4","13","155"],["4","14","294"],["4","15","410"],["4","16","387"],["4","17","353"],["4","18","337"],["4","19","296"],["4","20","301"],["4","21","279"],["4","22","282"],["4","23","234"],["5","0","121"],["5","1","96"],["5","2","34"],["5","3","12"],["5","4","6"],["5","10","5"],["5","11","17"],["5","12","58"],["5","13","177"],["5","14","263"],["5","15","464"],["5","16","405"],["5","17","360"],["5","18","325"],["5","19","315"],["5","20","296"],["5","21","269"],["5","22","257"],["5","23","218"],["6","0","104"],["6","1","78"],["6","2","28"],["6","3","4"],["6","4","2"],["6","12","11"],["6","13","32"],["6","14","77"],["6","15","174"],["6","16","256"],["6","17","297"],["6","18","255"],["6","19","216"],["6","20","215"],["6","21","178"],["6","22","201"],["6","23","175"]];
+var HM=[["0","0","106"],["0","1","61"],["0","2","29"],["0","3","9"],["0","4","11"],["0","12","8"],["0","13","36"],["0","14","93"],["0","15","183"],["0","16","262"],["0","17","236"],["0","18","248"],["0","19","232"],["0","20","242"],["0","21","219"],["0","22","216"],["0","23","168"],["1","0","121"],["1","1","53"],["1","2","37"],["1","3","15"],["1","4","18"],["1","11","17"],["1","12","76"],["1","13","218"],["1","14","408"],["1","15","675"],["1","16","587"],["1","17","430"],["1","18","440"],["1","19","356"],["1","20","367"],["1","21","316"],["1","22","292"],["1","23","237"],["2","0","150"],["2","1","90"],["2","2","54"],["2","3","15"],["2","4","6"],["2","11","12"],["2","12","73"],["2","13","213"],["2","14","320"],["2","15","506"],["2","16","529"],["2","17","410"],["2","18","386"],["2","19","348"],["2","20","344"],["2","21","325"],["2","22","332"],["2","23","235"],["3","0","151"],["3","1","81"],["3","2","44"],["3","3","18"],["3","4","8"],["3","11","16"],["3","12","68"],["3","13","169"],["3","14","286"],["3","15","427"],["3","16","384"],["3","17","378"],["3","18","404"],["3","19","333"],["3","20","334"],["3","21","318"],["3","22","331"],["3","23","236"],["4","0","150"],["4","1","99"],["4","2","45"],["4","3","13"],["4","4","15"],["4","11","8"],["4","12","65"],["4","13","155"],["4","14","294"],["4","15","410"],["4","16","387"],["4","17","353"],["4","18","337"],["4","19","296"],["4","20","301"],["4","21","279"],["4","22","282"],["4","23","234"],["5","0","121"],["5","1","96"],["5","2","34"],["5","3","12"],["5","4","6"],["5","10","5"],["5","11","17"],["5","12","58"],["5","13","177"],["5","14","263"],["5","15","464"],["5","16","405"],["5","17","360"],["5","18","325"],["5","19","315"],["5","20","296"],["5","21","269"],["5","22","257"],["5","23","218"],["6","0","104"],["6","1","78"],["6","2","28"],["6","3","4"],["6","4","2"],["6","12","11"],["6","13","32"],["6","14","77"],["6","15","174"],["6","16","256"],["6","17","297"],["6","18","255"],["6","19","216"],["6","20","215"],["6","21","178"],["6","22","201"],["6","23","175"]];
 
-const SC={security_company:"#E24B4A",agent:"#378ADD",opendoor_employee:"#EF9F27",victim:"#7F77DD",customer:"#1D9E75",neighbor:"#BA7517",cleaning_company:"#0F6E56",other:"#888780"};
-const MC={unknown:"#B4B2A9",forced_entry:"#E24B4A",unforced_entry:"#EF9F27",no_entry:"#639922",buyer_app:"#378ADD",other:"#888780",phone_call:"#1D9E75",sms_message:"#BA7517",keypad_reentry:"#185FA5"};
-const MKC=["#378ADD","#E24B4A","#1D9E75","#EF9F27","#7F77DD","#BA7517","#185FA5","#0F6E56","#D85A30","#639922","#B4B2A9","#FAC775","#A32D2D","#B5D4F4","#C0DD97"];
-const TPC=["#E24B4A","#EF9F27","#378ADD","#1D9E75","#7F77DD","#BA7517","#D85A30","#888780","#0F6E56","#639922","#185FA5","#A32D2D","#FAC775","#B5D4F4","#9FE1CB","#B4B2A9","#F4C0D1","#C0DD97","#FAC775","#E6F1FB"];
+var PATROL_TREND=[["2022-01-01","3844","151","555"],["2022-02-01","3944","221","590"],["2022-03-01","4480","260","648"],["2022-04-01","5210","271","740"],["2022-05-01","5855","323","932"],["2022-06-01","6041","413","1085"],["2022-07-01","7446","557","1466"],["2022-08-01","7670","615","1651"],["2022-09-01","4498","483","986"],["2022-10-01","3032","268","473"],["2022-11-01","3597","319","528"],["2022-12-01","4373","350","696"],["2023-01-01","3606","337","663"],["2023-02-01","2131","183","376"],["2023-03-01","1765","163","344"],["2023-04-01","1183","131","245"],["2023-05-01","1121","92","198"],["2023-06-01","1007","84","188"],["2023-07-01","1052","98","189"],["2023-08-01","893","94","153"],["2023-09-01","1056","115","206"],["2023-10-01","915","95","132"],["2023-11-01","951","74","143"],["2023-12-01","1113","114","224"],["2024-01-01","1100","107","172"],["2024-02-01","1397","150","194"],["2024-03-01","1393","125","246"],["2024-04-01","1439","130","237"],["2024-05-01","1946","173","341"],["2024-06-01","3249","278","437"],["2024-07-01","4544","354","618"],["2024-08-01","3877","376","577"],["2024-09-01","2922","295","418"],["2024-10-01","2011","230","260"],["2024-11-01","2076","217","398"],["2024-12-01","1998","174","341"],["2025-01-01","2182","209","353"],["2025-02-01","2248","204","374"],["2025-03-01","2648","263","421"],["2025-04-01","2417","220","409"],["2025-05-01","2051","157","280"],["2025-06-01","2106","193","261"],["2025-07-01","2016","173","230"],["2025-08-01","1640","116","163"],["2025-09-01","1395","95","216"],["2025-10-01","1311","83","191"],["2025-11-01","1183","89","140"],["2025-12-01","1187","100","170"],["2026-01-01","944","86","125"],["2026-02-01","858","69","95"],["2026-03-01","700","68","112"]];
 
-const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const fm=n=>Number(n).toLocaleString();
-const fk=n=>n>=1000?(n/1000).toFixed(1)+"k":String(Math.round(n));
-const fl=s=>(s||"").replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
-const ml=r=>{const d=new Date(r[0]);return MN[d.getMonth()]+"'"+(d.getFullYear()+"").slice(2);};
+var PATROL_CATS=[["Access Control / Site Inaccessible","1667"],["Trespassing - Unauthorized Access","842"],["Doors & Windows - Unlocked","758"],["Unsecured Access Points / Doors","533"],["Unauthorized Activity / Loitering","517"],["Property Issues / Vandalism","498"],["Doors & Windows - Damaged","430"],["Property Issues / Site Equipment","371"],["Access Control - Site Inaccessible","318"],["Vandalism - Property Damage","266"],["Unauthorized Activity / Homeless","246"],["Unsecured Access Points / Windows","177"],["Access Control - Malfunctioning","174"],["Doors & Windows - Propped Open","144"]];
 
-// Filters
-const allM=[...new Set(TREND.map(r=>r[0]))].sort();
+var PATROL_RESP=[["2022-01-01","61.4"],["2022-02-01","60.7"],["2022-03-01","54.4"],["2022-04-01","53.5"],["2022-06-01","63.7"],["2022-07-01","80.3"],["2022-08-01","72.0"],["2022-09-01","59.8"],["2022-10-01","61.8"],["2022-11-01","65.6"],["2022-12-01","86.2"],["2023-01-01","68.5"],["2023-02-01","60.8"],["2023-03-01","61.7"],["2023-05-01","53.9"],["2023-06-01","61.8"],["2023-07-01","73.2"],["2023-08-01","78.6"],["2023-09-01","68.2"],["2023-10-01","68.2"],["2023-11-01","75.0"],["2023-12-01","85.7"],["2024-01-01","111.1"],["2024-02-01","70.7"],["2024-04-01","97.0"],["2024-06-01","95.6"],["2024-07-01","114.1"],["2024-08-01","90.4"],["2024-09-01","88.7"],["2024-11-01","85.9"],["2024-12-01","90.7"],["2025-01-01","95.9"],["2025-02-01","91.4"],["2025-03-01","86.5"],["2025-04-01","97.3"],["2025-05-01","94.6"],["2025-06-01","105.3"],["2025-07-01","103.0"],["2025-08-01","88.8"],["2025-09-01","99.4"],["2025-10-01","113.1"],["2025-11-01","132.6"],["2025-12-01","141.9"],["2026-01-01","111.0"],["2026-02-01","119.1"],["2026-03-01","105.2"]];
+
+var PATROL_BR=[
+  ["Atlanta","11866","927","104.4","2365","207"],
+  ["Dallas","6663","892","57.1","736","77"],
+  ["Phoenix","6299","988","70.8","530","26"],
+  ["Jacksonville","2727","268","0","313","60"],
+  ["Houston","2471","260","119.2","447","44"],
+  ["Sacramento","2387","213","49.2","306","29"],
+  ["Charlotte","2307","159","82.5","370","70"],
+  ["Raleigh","2087","199","113.5","380","67"],
+  ["Las Vegas","1929","211","34.1","303","27"],
+  ["Orlando","1759","146","58.4","258","26"],
+  ["Indianapolis","1756","179","65.4","132","29"],
+  ["Tampa","1698","34","78.2","266","29"],
+  ["Denver","1503","90","42.9","186","19"],
+  ["Minneapolis","1374","62","40.0","110","30"],
+  ["Ontario CA","1365","146","52.5","536","39"],
+  ["St Louis","1364","79","72.8","126","38"],
+  ["Portland","1340","129","43.4","218","19"],
+  ["San Antonio","1213","41","67.6","90","29"],
+  ["Austin","1094","78","105.6","131","17"],
+  ["Columbus","1090","98","245.8","281","6"]
+];
+
+var SC={security_company:"#E24B4A",agent:"#378ADD",opendoor_employee:"#EF9F27",victim:"#7F77DD",customer:"#1D9E75",neighbor:"#BA7517",cleaning_company:"#0F6E56",other:"#888780"};
+var MC={unknown:"#B4B2A9",forced_entry:"#E24B4A",unforced_entry:"#EF9F27",no_entry:"#639922",buyer_app:"#378ADD",other:"#888780",phone_call:"#1D9E75",sms_message:"#BA7517",keypad_reentry:"#185FA5"};
+var MKC=["#378ADD","#E24B4A","#1D9E75","#EF9F27","#7F77DD","#BA7517","#185FA5","#0F6E56","#D85A30","#639922","#B4B2A9","#FAC775","#A32D2D","#B5D4F4","#C0DD97"];
+var TPC=["#E24B4A","#EF9F27","#378ADD","#1D9E75","#7F77DD","#BA7517","#D85A30","#888780","#0F6E56","#639922","#185FA5","#A32D2D","#FAC775","#B5D4F4","#9FE1CB","#B4B2A9","#C0DD97","#FAC775","#E6F1FB"];
+
+var MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function fm(n){return Number(n).toLocaleString();}
+function fk(n){return n>=1000?(n/1000).toFixed(1)+"k":String(Math.round(n));}
+function fl(s){return (s||"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
+function ml(r){var d=new Date(r[0]);return MN[d.getMonth()]+"'"+(d.getFullYear()+"").slice(2);}
+
+var allM=[]; for(var i=0;i<TREND.length;i++){allM.push(TREND[i][0]);}
+
 function initF(){
-  const sd=document.getElementById('sd'),ed=document.getElementById('ed');
-  allM.forEach(m=>{sd.innerHTML+=`<option value="${m}">${m}</option>`;ed.innerHTML+=`<option value="${m}">${m}</option>`;});
+  var sd=document.getElementById("sd"),ed=document.getElementById("ed");
+  for(var i=0;i<allM.length;i++){
+    sd.innerHTML+="<option value='"+allM[i]+"'>"+allM[i]+"</option>";
+    ed.innerHTML+="<option value='"+allM[i]+"'>"+allM[i]+"</option>";
+  }
   ed.value=allM[allM.length-1];
-  TYPES.map(r=>r[0]).forEach(t=>document.getElementById('tf').innerHTML+=`<option value="${t}">${fl(t)}</option>`);
-  MARKETS.map(r=>r[0]).forEach(m=>document.getElementById('mf').innerHTML+=`<option value="${m}">${m}</option>`);
+  for(var i=0;i<TYPES.length;i++){document.getElementById("tf").innerHTML+="<option value='"+TYPES[i][0]+"'>"+fl(TYPES[i][0])+"</option>";}
+  for(var i=0;i<MARKETS.length;i++){document.getElementById("mf").innerHTML+="<option value='"+MARKETS[i][0]+"'>"+MARKETS[i][0]+"</option>";}
 }
-function gF(){return{s:document.getElementById('sd').value,e:document.getElementById('ed').value,t:document.getElementById('tf').value,m:document.getElementById('mf').value};}
-function gFT(){const f=gF();return TREND.filter(r=>r[0]>=f.s&&r[0]<=f.e);}
-function applyF(){const ft=gFT();document.getElementById('fcnt').textContent=fm(ft.reduce((a,r)=>a+ +r[1],0))+' incidents';renderCur();}
 
-// Charts
-const CH={};
+function gF(){return{s:document.getElementById("sd").value,e:document.getElementById("ed").value,t:document.getElementById("tf").value,m:document.getElementById("mf").value};}
+function gFT(){var f=gF();return TREND.filter(function(r){return r[0]>=f.s&&r[0]<=f.e;});}
+function applyF(){
+  var ft=gFT();
+  var tot=ft.reduce(function(a,r){return a+ +r[1];},0);
+  document.getElementById("fcnt").textContent=fm(tot)+" incidents";
+  renderCur();
+}
+
+var CH={};
 function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+var curTab="overview";
 
-let curTab='overview';
 function showTab(id,btn){
-  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  btn.classList.add('active');
+  var panes=document.querySelectorAll(".tp");
+  for(var i=0;i<panes.length;i++){panes[i].classList.remove("active");}
+  var btns=document.querySelectorAll(".tb");
+  for(var i=0;i<btns.length;i++){btns[i].classList.remove("active");}
+  document.getElementById("tab-"+id).classList.add("active");
+  btn.classList.add("active");
   curTab=id;renderCur();
 }
+
 function renderCur(){
-  if(curTab==='overview')renderOverview();
-  else if(curTab==='rate')renderRate();
-  else if(curTab==='knox')renderKnox();
-  else if(curTab==='types')renderTypes();
-  else if(curTab==='markets')renderMarkets();
-  else if(curTab==='source')renderSource();
-  else if(curTab==='entry')renderEntry();
-  else if(curTab==='heatmap')renderHeatmap();
+  if(curTab==="overview")renderOverview();
+  else if(curTab==="rate")renderRate();
+  else if(curTab==="knox")renderKnox();
+  else if(curTab==="patrol")renderPatrol();
+  else if(curTab==="types")renderTypes();
+  else if(curTab==="markets")renderMarkets();
+  else if(curTab==="source")renderSource();
+  else if(curTab==="entry")renderEntry();
+  else if(curTab==="heatmap")renderHeatmap();
 }
 
-// OVERVIEW
 function renderOverview(){
-  const ft=gFT(),f=gF();
-  const tot=ft.reduce((a,r)=>a+ +r[1],0),pat=ft.reduce((a,r)=>a+ +r[2],0);
-  document.getElementById('ov-total').textContent=fm(tot);
-  document.getElementById('ov-range').textContent=f.s+' → '+f.e;
-  document.getElementById('ov-patrol').textContent=fm(pat);
-  document.getElementById('ov-pp').textContent=(tot?Math.round(pat/tot*100):0)+'% of incidents';
-  document.getElementById('ov-type').textContent=fl(f.t!=='all'?f.t:TYPES[0][0]).split(' ')[0];
-  document.getElementById('ov-type-s').textContent=fm(+(f.t!=='all'?(TYPES.find(r=>r[0]===f.t)||TYPES[0])[1]:TYPES[0][1]))+' incidents';
-  document.getElementById('ov-mkt').textContent=f.m!=='all'?f.m:MARKETS[0][0];
-  document.getElementById('ov-mkt-s').textContent=fm(+(f.m!=='all'?(MARKETS.find(r=>r[0]===f.m)||MARKETS[0])[1]:MARKETS[0][1]))+' incidents';
-
-  dc('trend');
-  CH.trend=new Chart(document.getElementById('trendC'),{type:'bar',
-    data:{labels:ft.map(ml),datasets:[{label:'Total',data:ft.map(r=>+r[1]),backgroundColor:'#B5D4F4',borderRadius:3},{label:'Patrol',data:ft.map(r=>+r[2]),backgroundColor:'#E24B4A',borderRadius:3}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
-      scales:{x:{ticks:{color:'#888',font:{size:9},maxTicksLimit:16,maxRotation:45},grid:{display:false}},
-        y:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}}}}});
-
-  dc('tier');
-  CH.tier=new Chart(document.getElementById('tierC'),{type:'doughnut',
-    data:{labels:TIERS.map(r=>'Tier '+r[0]),datasets:[{data:TIERS.map(r=>+r[1]),backgroundColor:TIERS.map(r=>TC[r[0]]),borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
-  document.getElementById('tier-lg').innerHTML=TIERS.map(r=>`<div class="li"><div class="sw" style="background:${TC[r[0]]}"></div>Tier ${r[0]} (${fm(+r[1])})</div>`).join('');
-  document.getElementById('tier-tb').innerHTML=TIERS.map(r=>`<tr><td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${TC[r[0]]};flex-shrink:0"></span>Tier ${r[0]}</span></td><td>${fm(+r[1])}</td><td>${fm(+r[2])}</td><td>${Math.round(+r[2]/+r[1]*100)}%</td></tr>`).join('');
+  var ft=gFT(),f=gF();
+  var tot=ft.reduce(function(a,r){return a+ +r[1];},0);
+  var pat=ft.reduce(function(a,r){return a+ +r[2];},0);
+  document.getElementById("ov-total").textContent=fm(tot);
+  document.getElementById("ov-range").textContent=f.s+" to "+f.e;
+  document.getElementById("ov-patrol").textContent=fm(pat);
+  document.getElementById("ov-pp").textContent=(tot?Math.round(pat/tot*100):0)+"% of incidents";
+  var topType=f.t!=="all"?f.t:TYPES[0][0];
+  var topTypeCnt=f.t!=="all"?(TYPES.filter(function(r){return r[0]===f.t;})[0]||TYPES[0])[1]:TYPES[0][1];
+  document.getElementById("ov-type").textContent=fl(topType).split(" ")[0];
+  document.getElementById("ov-type-s").textContent=fm(+topTypeCnt)+" incidents";
+  var topMkt=f.m!=="all"?f.m:MARKETS[0][0];
+  var topMktCnt=f.m!=="all"?(MARKETS.filter(function(r){return r[0]===f.m;})[0]||MARKETS[0])[1]:MARKETS[0][1];
+  document.getElementById("ov-mkt").textContent=topMkt;
+  document.getElementById("ov-mkt-s").textContent=fm(+topMktCnt)+" incidents";
+  dc("trend");
+  CH.trend=new Chart(document.getElementById("trendC"),{type:"bar",
+    data:{labels:ft.map(ml),datasets:[{label:"Total",data:ft.map(function(r){return +r[1];}),backgroundColor:"#B5D4F4",borderRadius:3},{label:"Patrol",data:ft.map(function(r){return +r[2];}),backgroundColor:"#E24B4A",borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:"index",intersect:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:9},maxTicksLimit:16,maxRotation:45},grid:{display:false}},
+        y:{ticks:{color:"#888",font:{size:10},callback:function(v){return fk(v);}},grid:{color:"rgba(0,0,0,0.05)"}}}}});
+  dc("tier");
+  CH.tier=new Chart(document.getElementById("tierC"),{type:"doughnut",
+    data:{labels:TIERS.map(function(r){return "Tier "+r[0];}),datasets:[{data:TIERS.map(function(r){return +r[1];}),backgroundColor:TIERS.map(function(r){return TC[r[0]];}),borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:false}}}});
+  document.getElementById("tier-lg").innerHTML=TIERS.map(function(r){return "<div class='li'><div class='sw' style='background:"+TC[r[0]]+"'></div>Tier "+r[0]+" ("+fm(+r[1])+")</div>";}).join("");
+  document.getElementById("tier-tb").innerHTML=TIERS.map(function(r){return "<tr><td><span style='display:flex;align-items:center;gap:6px'><span style='width:8px;height:8px;border-radius:2px;background:"+TC[r[0]]+";flex-shrink:0'></span>Tier "+r[0]+"</span></td><td>"+fm(+r[1])+"</td><td>"+fm(+r[2])+"</td><td>"+Math.round(+r[2]/+r[1]*100)+"%</td></tr>";}).join("");
 }
 
-// INCIDENT RATE
 function renderRate(){
-  const lastRate=RATE.slice(-3).reduce((a,r)=>a+ +r[1],0)/3;
-  document.getElementById('rate-cur').textContent=(lastRate*100).toFixed(1)+'%';
-
-  dc('rate');
-  CH.rate=new Chart(document.getElementById('rateC'),{type:'bar',
-    data:{labels:RATE.map(r=>ml([r[0]])),datasets:[
-      {label:'Incident rate (%)',data:RATE.map(r=>(+r[1]*100).toFixed(2)),backgroundColor:'rgba(127,119,221,0.2)',borderColor:'#7F77DD',borderWidth:2,type:'line',tension:0.3,pointRadius:0,yAxisID:'y2'},
-      {label:'Raw count',data:TREND.map(r=>+r[1]),backgroundColor:'#B5D4F4',borderRadius:2,yAxisID:'y'}
+  var last=RATE.slice(-3);
+  var avg=last.reduce(function(a,r){return a+ +r[1];},0)/3;
+  document.getElementById("rate-cur").textContent=(avg*100).toFixed(1)+"%";
+  dc("rate");
+  var trendMap={};
+  TREND.forEach(function(r){trendMap[r[0]]=+r[1];});
+  CH.rate=new Chart(document.getElementById("rateC"),{type:"bar",
+    data:{labels:RATE.map(function(r){return ml([r[0]]);}),datasets:[
+      {label:"Rate %",data:RATE.map(function(r){return (+r[1]*100).toFixed(2);}),backgroundColor:"transparent",borderColor:"#7F77DD",borderWidth:2,type:"line",tension:0.3,pointRadius:0,fill:false,yAxisID:"y2"},
+      {label:"Count",data:RATE.map(function(r){return trendMap[r[0]]||0;}),backgroundColor:"#B5D4F4",borderRadius:2,yAxisID:"y"}
     ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
-      scales:{x:{ticks:{color:'#888',font:{size:9},maxTicksLimit:16,maxRotation:45},grid:{display:false}},
-        y:{position:'left',ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Count',color:'#888',font:{size:10}}},
-        y2:{position:'right',ticks:{color:'#7F77DD',font:{size:10},callback:v=>v+'%'},grid:{display:false},title:{display:true,text:'Rate %',color:'#7F77DD',font:{size:10}}}}}});
-
-  dc('rateMkt');
-  CH.rateMkt=new Chart(document.getElementById('rateMktC'),{type:'bar',
-    data:{labels:RATE_MKT.map(r=>r[0]),datasets:[{data:RATE_MKT.map(r=>(+r[1]*100).toFixed(1)),backgroundColor:RATE_MKT.map((_,i)=>+RATE_MKT[i][1]>0.15?'#E24B4A':+RATE_MKT[i][1]>0.09?'#EF9F27':'#B5D4F4'),borderRadius:4}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.raw+'%'}}},
-      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:"index",intersect:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:9},maxTicksLimit:14,maxRotation:45},grid:{display:false}},
+        y:{position:"left",ticks:{color:"#888",font:{size:10},callback:function(v){return fk(v);}},grid:{color:"rgba(0,0,0,0.05)"},title:{display:true,text:"Count",color:"#888",font:{size:10}}},
+        y2:{position:"right",ticks:{color:"#7F77DD",font:{size:10},callback:function(v){return v+"%";}},grid:{display:false},title:{display:true,text:"Rate %",color:"#7F77DD",font:{size:10}}}}}});
+  dc("rateMkt");
+  CH.rateMkt=new Chart(document.getElementById("rateMktC"),{type:"bar",
+    data:{labels:RATE_MKT.map(function(r){return r[0];}),datasets:[{data:RATE_MKT.map(function(r){return (+r[1]*100).toFixed(1);}),backgroundColor:RATE_MKT.map(function(r){return +r[1]>0.15?"#E24B4A":+r[1]>0.09?"#EF9F27":"#B5D4F4";}),borderRadius:4}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return " "+ctx.raw+"%";}}}},
+      scales:{x:{ticks:{color:"#888",font:{size:10},callback:function(v){return v+"%";}},grid:{color:"rgba(0,0,0,0.05)"}},y:{ticks:{color:"#555",font:{size:11}},grid:{display:false}}}}});
 }
 
-// KNOX INTELLIGENCE
 function renderKnox(){
-  dc('knox');
-  const labels=KNOX_MONTHLY.map(r=>ml([r[0]]));
-  const reclPct=KNOX_MONTHLY.map(r=>Math.round(+r[2]/+r[1]*100));
-  CH.knox=new Chart(document.getElementById('knoxC'),{type:'bar',
-    data:{labels,datasets:[
-      {label:'Reclassification %',data:reclPct,backgroundColor:'rgba(239,159,39,0.3)',borderColor:'#EF9F27',borderWidth:1.5,type:'bar',yAxisID:'y2'},
-      {label:'Avg incident index',data:KNOX_MONTHLY.map(r=>+r[3]),borderColor:'#7F77DD',backgroundColor:'transparent',borderWidth:2,type:'line',tension:0.3,pointRadius:0,yAxisID:'y'}
+  dc("knox");
+  CH.knox=new Chart(document.getElementById("knoxC"),{type:"bar",
+    data:{labels:KNOX_M.map(function(r){return ml([r[0]]);}),datasets:[
+      {label:"Reclassification %",data:KNOX_M.map(function(r){return Math.round(+r[2]/+r[1]*100);}),backgroundColor:"rgba(239,159,39,0.3)",borderColor:"#EF9F27",borderWidth:1.5,type:"bar",yAxisID:"y2"},
+      {label:"Avg incident index",data:KNOX_M.map(function(r){return +r[3];}),borderColor:"#7F77DD",backgroundColor:"transparent",borderWidth:2,type:"line",tension:0.3,pointRadius:2,fill:false,yAxisID:"y"}
     ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
-      scales:{x:{ticks:{color:'#888',font:{size:9},maxTicksLimit:16,maxRotation:45},grid:{display:false}},
-        y:{position:'left',ticks:{color:'#7F77DD',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Incident index',color:'#7F77DD',font:{size:10}}},
-        y2:{position:'right',ticks:{color:'#EF9F27',font:{size:10},callback:v=>v+'%'},grid:{display:false},title:{display:true,text:'Reclassified %',color:'#EF9F27',font:{size:10}}}}}});
-
-  dc('reclass');
-  CH.reclass=new Chart(document.getElementById('reclassC'),{type:'doughnut',
-    data:{labels:['Reclassified','Unchanged'],datasets:[{data:[32,68],backgroundColor:['#EF9F27','#EAF3DE'],borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false}}}});
-
-  document.getElementById('alfred-tb').innerHTML=ALFRED.map(r=>{
-    const changed=r[1]&&r[1]!==r[0];
-    const badge=!r[1]?`<span class="badge b-blue">Pending review</span>`:changed?`<span class="badge b-amber">Reclassified</span>`:`<span class="badge b-green">Confirmed</span>`;
-    return `<tr><td>Tier ${r[0]}</td><td>${r[1]||'—'}</td><td>${fm(+r[2])}</td><td>${r[3]}</td><td>${badge}</td></tr>`;
-  }).join('');
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:"index",intersect:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:9},maxTicksLimit:12,maxRotation:45},grid:{display:false}},
+        y:{position:"left",ticks:{color:"#7F77DD",font:{size:10}},grid:{color:"rgba(0,0,0,0.05)"},title:{display:true,text:"Incident index",color:"#7F77DD",font:{size:10}}},
+        y2:{position:"right",ticks:{color:"#EF9F27",font:{size:10},callback:function(v){return v+"%";}},grid:{display:false},title:{display:true,text:"Reclassified %",color:"#EF9F27",font:{size:10}}}}}});
+  var ins=[
+    {label:"No security system",val:"24,094 incidents",sub:"Avg index: 2.63 | Patrol: 2,853",c:"#E24B4A"},
+    {label:"SmartRent installed",val:"1,051 incidents",sub:"Avg index: 2.31 | 12% lower severity",c:"#EF9F27"},
+    {label:"Knox security installed",val:"21 incidents",sub:"Avg index: 1.76 | 33% lower severity",c:"#1D9E75"}
+  ];
+  document.getElementById("knox-ins").innerHTML=ins.map(function(i){return "<div class='insight' style='border-left-color:"+i.c+"'><p style='font-size:12px;color:var(--text2);margin-bottom:3px'>"+i.label+"</p><p style='font-size:18px;font-weight:500'>"+i.val+"</p><p style='font-size:11px;color:var(--text3);margin-top:2px'>"+i.sub+"</p></div>";}).join("");
+  document.getElementById("alfred-tb").innerHTML=ALFRED.map(function(r){
+    var changed=(r[1]!==""&&r[1]!==r[0]);
+    var badge=!r[1]?"<span class='badge bb'>Pending</span>":(changed?"<span class='badge ba'>Reclassified</span>":"<span class='badge bg'>Confirmed</span>");
+    return "<tr><td>Tier "+r[0]+"</td><td>"+(r[1]||"pending")+"</td><td>"+fm(+r[2])+"</td><td>"+r[3]+"</td><td>"+badge+"</td></tr>";
+  }).join("");
 }
 
-// TYPES
+function renderPatrol(){
+  dc("patrolTrend");
+  CH.patrolTrend=new Chart(document.getElementById("patrolTrendC"),{type:"bar",
+    data:{labels:PATROL_TREND.map(function(r){return ml([r[0]]);}),datasets:[
+      {label:"Total",data:PATROL_TREND.map(function(r){return +r[1];}),backgroundColor:"#B5D4F4",borderRadius:2},
+      {label:"Incidents",data:PATROL_TREND.map(function(r){return +r[2];}),backgroundColor:"#E24B4A",borderRadius:2},
+      {label:"Not accessible",data:PATROL_TREND.map(function(r){return +r[3];}),backgroundColor:"#EF9F27",borderRadius:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:"index",intersect:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:9},maxTicksLimit:16,maxRotation:45},grid:{display:false}},
+        y:{ticks:{color:"#888",font:{size:10},callback:function(v){return fk(v);}},grid:{color:"rgba(0,0,0,0.05)"}}}}});
+  dc("patrolType");
+  CH.patrolType=new Chart(document.getElementById("patrolTypeC"),{type:"doughnut",
+    data:{labels:["Alarm Response","Patrol Inspection"],datasets:[{data:[79324,50297],backgroundColor:["#378ADD","#1D9E75"],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:false}}}});
+  dc("patrolCat");
+  CH.patrolCat=new Chart(document.getElementById("patrolCatC"),{type:"bar",
+    data:{labels:PATROL_CATS.map(function(r){return r[0].length>38?r[0].slice(0,38)+"...":r[0];}),
+      datasets:[{data:PATROL_CATS.map(function(r){return +r[1];}),backgroundColor:PATROL_CATS.map(function(r,i){return i<3?"#E24B4A":i<7?"#EF9F27":"#B5D4F4";}),borderRadius:3}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10},callback:function(v){return fk(v);}},grid:{color:"rgba(0,0,0,0.05)"}},y:{ticks:{color:"#555",font:{size:10}},grid:{display:false}}}}});
+  dc("patrolResp");
+  var validR=PATROL_RESP.filter(function(r){return +r[1]>0&&+r[1]<400;});
+  CH.patrolResp=new Chart(document.getElementById("patrolRespC"),{type:"line",
+    data:{labels:validR.map(function(r){return ml([r[0]]);}),
+      datasets:[{label:"Avg response (min)",data:validR.map(function(r){return +r[1];}),borderColor:"#7F77DD",backgroundColor:"rgba(127,119,221,0.1)",tension:0.3,pointRadius:2,fill:true,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:9},maxTicksLimit:14,maxRotation:45},grid:{display:false}},
+        y:{ticks:{color:"#888",font:{size:10}},grid:{color:"rgba(0,0,0,0.05)"},title:{display:true,text:"Minutes",color:"#888",font:{size:10}}}}}});
+  var rows="";
+  for(var i=0;i<PATROL_BR.length;i++){
+    var r=PATROL_BR[i];
+    var inc=Math.round(+r[2]/+r[1]*100);
+    var resp=+r[3];
+    var rc=resp>120?"#E24B4A":resp>90?"#EF9F27":"#1D9E75";
+    var respTxt=resp===0?"N/A":resp+" min";
+    var ibadge=inc>15?"<span class='badge br'>"+inc+"%</span>":(inc>10?"<span class='badge ba'>"+inc+"%</span>":"<span class='badge bg'>"+inc+"%</span>");
+    rows+="<tr><td style='font-weight:500'>"+r[0]+"</td><td>"+fm(+r[1])+"</td><td>"+fm(+r[2])+"</td><td>"+ibadge+"</td><td style='color:"+rc+";font-weight:500'>"+respTxt+"</td><td style='color:var(--text2)'>"+fm(+r[4])+"</td><td style='color:var(--text2)'>"+fm(+r[5])+"</td></tr>";
+  }
+  document.getElementById("patrol-branch-tb").innerHTML=rows;
+}
+
 function renderTypes(){
-  const tot=TYPES.reduce((a,r)=>a+ +r[1],0);
-  document.getElementById('type-mg').innerHTML=TYPES.slice(0,4).map(r=>`<div class="mc"><div class="ml">${fl(r[0])}</div><div class="mv">${fm(+r[1])}</div><div class="ms">${Math.round(+r[1]/tot*100)}% of total</div></div>`).join('');
-  dc('type');
-  const top=TYPES.slice(0,12);
-  CH.type=new Chart(document.getElementById('typeC'),{type:'bar',
-    data:{labels:top.map(r=>fl(r[0])),datasets:[{data:top.map(r=>+r[1]),backgroundColor:TPC.slice(0,top.length),borderRadius:4}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
-  document.getElementById('type-tb').innerHTML=TYPES.map((r,i)=>`<tr><td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${TPC[i]||'#888'};flex-shrink:0"></span>${fl(r[0])}</span></td><td>${fm(+r[1])}</td><td>${fm(+r[2])}</td><td style="color:var(--text2)">${Math.round(+r[2]/+r[1]*100)}%</td></tr>`).join('');
+  var tot=TYPES.reduce(function(a,r){return a+ +r[1];},0);
+  document.getElementById("type-mg").innerHTML=TYPES.slice(0,4).map(function(r){return "<div class='mc'><div class='ml'>"+fl(r[0])+"</div><div class='mv'>"+fm(+r[1])+"</div><div class='ms'>"+Math.round(+r[1]/tot*100)+"% of total</div></div>";}).join("");
+  dc("type");
+  var top=TYPES.slice(0,12);
+  CH.type=new Chart(document.getElementById("typeC"),{type:"bar",
+    data:{labels:top.map(function(r){return fl(r[0]);}),datasets:[{data:top.map(function(r){return +r[1];}),backgroundColor:TPC.slice(0,top.length),borderRadius:4}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10},callback:function(v){return fk(v);}},grid:{color:"rgba(0,0,0,0.05)"}},y:{ticks:{color:"#555",font:{size:11}},grid:{display:false}}}}});
+  document.getElementById("type-tb").innerHTML=TYPES.map(function(r,i){return "<tr><td><span style='display:flex;align-items:center;gap:6px'><span style='width:8px;height:8px;border-radius:2px;background:"+(TPC[i]||"#888")+";flex-shrink:0'></span>"+fl(r[0])+"</span></td><td>"+fm(+r[1])+"</td><td>"+fm(+r[2])+"</td><td style='color:var(--text2)'>"+Math.round(+r[2]/+r[1]*100)+"%</td></tr>";}).join("");
 }
 
-// MARKETS
 function renderMarkets(){
-  document.getElementById('mkt-mg').innerHTML=MARKETS.slice(0,4).map(r=>`<div class="mc"><div class="ml">${r[0]}</div><div class="mv">${fm(+r[1])}</div><div class="ms">Patrol: ${fm(+r[2])} (${Math.round(+r[2]/+r[1]*100)}%)</div></div>`).join('');
-  dc('mkt');
-  const top=MARKETS.slice(0,15);
-  CH.mkt=new Chart(document.getElementById('mktC'),{type:'bar',
-    data:{labels:top.map(r=>r[0]),datasets:[{data:top.map(r=>+r[1]),backgroundColor:MKC,borderRadius:4}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
-  document.getElementById('mkt-tb').innerHTML=MARKETS.map(r=>`<tr><td style="font-weight:500">${r[0]}</td><td>${fm(+r[1])}</td><td>${fm(+r[2])}</td><td style="color:var(--text2)">${Math.round(+r[2]/+r[1]*100)}%</td></tr>`).join('');
+  document.getElementById("mkt-mg").innerHTML=MARKETS.slice(0,4).map(function(r){return "<div class='mc'><div class='ml'>"+r[0]+"</div><div class='mv'>"+fm(+r[1])+"</div><div class='ms'>Patrol: "+fm(+r[2])+" ("+Math.round(+r[2]/+r[1]*100)+"%)</div></div>";}).join("");
+  dc("mkt");
+  var top=MARKETS.slice(0,15);
+  CH.mkt=new Chart(document.getElementById("mktC"),{type:"bar",
+    data:{labels:top.map(function(r){return r[0];}),datasets:[{data:top.map(function(r){return +r[1];}),backgroundColor:MKC,borderRadius:4}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10},callback:function(v){return fk(v);}},grid:{color:"rgba(0,0,0,0.05)"}},y:{ticks:{color:"#555",font:{size:11}},grid:{display:false}}}}});
+  document.getElementById("mkt-tb").innerHTML=MARKETS.map(function(r){return "<tr><td style='font-weight:500'>"+r[0]+"</td><td>"+fm(+r[1])+"</td><td>"+fm(+r[2])+"</td><td style='color:var(--text2)'>"+Math.round(+r[2]/+r[1]*100)+"%</td></tr>";}).join("");
 }
 
-// SOURCE
 function renderSource(){
-  const tot=SOURCES.reduce((a,r)=>a+ +r[1],0);
-  document.getElementById('src-mg').innerHTML=SOURCES.slice(0,4).map(r=>`<div class="mc"><div class="ml">${fl(r[0])}</div><div class="mv">${fm(+r[1])}</div><div class="ms">${Math.round(+r[1]/tot*100)}% of total</div></div>`).join('');
-  dc('src');
-  CH.src=new Chart(document.getElementById('srcC'),{type:'bar',
-    data:{labels:SOURCES.slice(0,8).map(r=>fl(r[0])),datasets:[{data:SOURCES.slice(0,8).map(r=>+r[1]),backgroundColor:SOURCES.slice(0,8).map(r=>SC[r[0]]||'#B4B2A9'),borderRadius:4}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
-  document.getElementById('src-tb').innerHTML=SOURCES.map(r=>`<tr><td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${SC[r[0]]||'#B4B2A9'};flex-shrink:0"></span>${fl(r[0])}</span></td><td>${fm(+r[1])}</td><td style="color:var(--text2)">${Math.round(+r[1]/tot*100)}%</td></tr>`).join('');
+  var tot=SOURCES.reduce(function(a,r){return a+ +r[1];},0);
+  document.getElementById("src-mg").innerHTML=SOURCES.slice(0,4).map(function(r){return "<div class='mc'><div class='ml'>"+fl(r[0])+"</div><div class='mv'>"+fm(+r[1])+"</div><div class='ms'>"+Math.round(+r[1]/tot*100)+"% of total</div></div>";}).join("");
+  dc("src");
+  CH.src=new Chart(document.getElementById("srcC"),{type:"bar",
+    data:{labels:SOURCES.slice(0,8).map(function(r){return fl(r[0]);}),datasets:[{data:SOURCES.slice(0,8).map(function(r){return +r[1];}),backgroundColor:SOURCES.slice(0,8).map(function(r){return SC[r[0]]||"#B4B2A9";}),borderRadius:4}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10},callback:function(v){return fk(v);}},grid:{color:"rgba(0,0,0,0.05)"}},y:{ticks:{color:"#555",font:{size:11}},grid:{display:false}}}}});
+  document.getElementById("src-tb").innerHTML=SOURCES.map(function(r){return "<tr><td><span style='display:flex;align-items:center;gap:6px'><span style='width:8px;height:8px;border-radius:2px;background:"+(SC[r[0]]||"#B4B2A9")+";flex-shrink:0'></span>"+fl(r[0])+"</span></td><td>"+fm(+r[1])+"</td><td style='color:var(--text2)'>"+Math.round(+r[1]/tot*100)+"%</td></tr>";}).join("");
 }
 
-// ENTRY
 function renderEntry(){
-  const tot=MODES.reduce((a,r)=>a+ +r[1],0);
-  document.getElementById('entry-mg').innerHTML=MODES.slice(0,4).map(r=>`<div class="mc"><div class="ml">${fl(r[0])}</div><div class="mv">${fm(+r[1])}</div><div class="ms">${Math.round(+r[1]/tot*100)}% of known</div></div>`).join('');
-  dc('mode');
-  CH.mode=new Chart(document.getElementById('modeC'),{type:'bar',
-    data:{labels:MODES.map(r=>fl(r[0])),datasets:[{data:MODES.map(r=>+r[1]),backgroundColor:MODES.map(r=>MC[r[0]]||'#B4B2A9'),borderRadius:4}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
-  document.getElementById('entry-ins').innerHTML=[
-    {l:'Forced entry',v:2802,s:'Top known entry method',c:'#E24B4A'},
-    {l:'Physical breach total',v:3191,s:'Forced entry + break-in variants',c:'#D85A30'},
-    {l:'Digital / remote access',v:1368,s:'Buyer app, phone, SMS',c:'#378ADD'},
-    {l:'Unknown entry mode',v:3984,s:'Largest category — data gap',c:'#B4B2A9'}
-  ].map(i=>`<div class="insight" style="border-left-color:${i.c}"><p style="font-size:12px;color:var(--text2);margin-bottom:2px">${i.l}</p><p style="font-size:20px;font-weight:500">${fm(i.v)}</p><p style="font-size:11px;color:var(--text3);margin-top:2px">${i.s}</p></div>`).join('');
+  var tot=MODES.reduce(function(a,r){return a+ +r[1];},0);
+  document.getElementById("entry-mg").innerHTML=MODES.slice(0,4).map(function(r){return "<div class='mc'><div class='ml'>"+fl(r[0])+"</div><div class='mv'>"+fm(+r[1])+"</div><div class='ms'>"+Math.round(+r[1]/tot*100)+"% of known</div></div>";}).join("");
+  dc("mode");
+  CH.mode=new Chart(document.getElementById("modeC"),{type:"bar",
+    data:{labels:MODES.map(function(r){return fl(r[0]);}),datasets:[{data:MODES.map(function(r){return +r[1];}),backgroundColor:MODES.map(function(r){return MC[r[0]]||"#B4B2A9";}),borderRadius:4}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10},callback:function(v){return fk(v);}},grid:{color:"rgba(0,0,0,0.05)"}},y:{ticks:{color:"#555",font:{size:11}},grid:{display:false}}}}});
+  var ins=[
+    {l:"Forced entry",v:2802,s:"Top known entry method",c:"#E24B4A"},
+    {l:"Physical breach total",v:3191,s:"Forced entry + break-in variants",c:"#D85A30"},
+    {l:"Digital / remote access",v:1368,s:"Buyer app, phone, SMS",c:"#378ADD"},
+    {l:"Unknown entry mode",v:3984,s:"Largest category",c:"#B4B2A9"}
+  ];
+  document.getElementById("entry-ins").innerHTML=ins.map(function(i){return "<div class='insight' style='border-left-color:"+i.c+"'><p style='font-size:12px;color:var(--text2);margin-bottom:2px'>"+i.l+"</p><p style='font-size:20px;font-weight:500'>"+fm(i.v)+"</p><p style='font-size:11px;color:var(--text3);margin-top:2px'>"+i.s+"</p></div>";}).join("");
 }
 
-// HEATMAP
 function renderHeatmap(){
-  const hm={};HM.forEach(([d,h,c])=>{hm[`${d}-${h}`]=+c;});
-  const hmx=Math.max(...Object.values(hm));
-  const hmc=v=>{if(!v)return'var(--bg2)';const p=v/hmx;return p>.7?'#E24B4A':p>.4?'#EF9F27':p>.15?'#FAC775':'#EAF3DE';};
-  const g=document.getElementById('hmg');g.innerHTML='';
-  g.appendChild(document.createElement('div'));
-  for(let h=0;h<24;h++){const d=document.createElement('div');d.style.cssText='text-align:center;padding-bottom:3px';d.textContent=h;g.appendChild(d);}
-  DN.forEach((day,dow)=>{
-    const dl=document.createElement('div');dl.style.cssText='display:flex;align-items:center;font-size:11px;color:var(--text2)';dl.textContent=day;g.appendChild(dl);
-    for(let h=0;h<24;h++){const c=document.createElement('div');c.style.cssText=`height:26px;border-radius:2px;background:${hmc(hm[`${dow}-${h}`]||0)};cursor:default`;c.title=`${day} ${h}:00 — ${hm[`${dow}-${h}`]||0}`;g.appendChild(c);}
-  });
-  const hb=document.getElementById('hr-bars');hb.innerHTML='';
-  const ht=Array.from({length:24},(_,h)=>DN.reduce((_,__,d)=>_+(hm[`${d}-${h}`]||0),0));
-  const hx=Math.max(...ht);
-  ht.forEach((t,h)=>{const p=t/hx;hb.innerHTML+=`<div class="hbar-r"><span class="hbar-l">${h}</span><div class="hbar-t"><div class="hbar-f" style="width:${Math.round(p*100)}%;background:${p>.7?'#E24B4A':p>.4?'#EF9F27':'#B5D4F4'}"></div></div><span class="hbar-v">${fk(t)}</span></div>`;});
-  const db=document.getElementById('day-bars');db.innerHTML='';
-  const dt=DN.map((_,dow)=>Array.from({length:24},(__,h)=>hm[`${dow}-${h}`]||0).reduce((a,b)=>a+b,0));
-  const dx=Math.max(...dt);
-  DN.forEach((d,i)=>{db.innerHTML+=`<div class="hbar-r" style="margin-bottom:8px"><span style="font-size:12px;color:var(--text2);width:28px">${d}</span><div class="hbar-t" style="height:16px"><div class="hbar-f" style="width:${Math.round(dt[i]/dx*100)}%;background:#378ADD"></div></div><span style="font-size:12px;font-weight:500;width:40px;text-align:right">${fk(dt[i])}</span></div>`;});
+  var hm={};
+  HM.forEach(function(r){hm[r[0]+"-"+r[1]]=+r[2];});
+  var hmx=0;
+  for(var k in hm){if(hm[k]>hmx)hmx=hm[k];}
+  function hmc(v){if(!v)return"var(--bg2)";var p=v/hmx;return p>.7?"#E24B4A":p>.4?"#EF9F27":p>.15?"#FAC775":"#EAF3DE";}
+  var g=document.getElementById("hmg");g.innerHTML="";
+  g.appendChild(document.createElement("div"));
+  for(var h=0;h<24;h++){var d=document.createElement("div");d.style.cssText="text-align:center;padding-bottom:3px";d.textContent=h;g.appendChild(d);}
+  for(var dow=0;dow<7;dow++){
+    var dl=document.createElement("div");dl.style.cssText="display:flex;align-items:center;font-size:11px;color:var(--text2)";dl.textContent=DN[dow];g.appendChild(dl);
+    for(var h=0;h<24;h++){
+      var c=document.createElement("div");
+      var v=hm[dow+"-"+h]||0;
+      c.style.cssText="height:26px;border-radius:2px;background:"+hmc(v)+";cursor:default";
+      c.title=DN[dow]+" "+h+":00 - "+v+" incidents";
+      g.appendChild(c);
+    }
+  }
+  var hb=document.getElementById("hr-bars");hb.innerHTML="";
+  var ht=[];
+  for(var h=0;h<24;h++){var s=0;for(var d=0;d<7;d++){s+=hm[d+"-"+h]||0;}ht.push(s);}
+  var hx=Math.max.apply(null,ht);
+  for(var h=0;h<24;h++){
+    var p=ht[h]/hx;
+    var col=p>.7?"#E24B4A":p>.4?"#EF9F27":"#B5D4F4";
+    hb.innerHTML+="<div style='display:flex;align-items:center;gap:8px;margin-bottom:3px'><span style='font-size:10px;color:var(--text3);width:20px;text-align:right'>"+h+"</span><div style='flex:1;background:var(--bg2);border-radius:3px;height:10px;overflow:hidden'><div style='width:"+Math.round(p*100)+"%;height:100%;border-radius:3px;background:"+col+"'></div></div><span style='font-size:10px;color:var(--text2);width:36px;text-align:right'>"+fk(ht[h])+"</span></div>";
+  }
+  var db=document.getElementById("day-bars");db.innerHTML="";
+  var dt=[];
+  for(var d=0;d<7;d++){var s=0;for(var h=0;h<24;h++){s+=hm[d+"-"+h]||0;}dt.push(s);}
+  var dx=Math.max.apply(null,dt);
+  for(var d=0;d<7;d++){
+    db.innerHTML+="<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'><span style='font-size:12px;color:var(--text2);width:28px'>"+DN[d]+"</span><div style='flex:1;background:var(--bg2);border-radius:3px;height:16px;overflow:hidden'><div style='width:"+Math.round(dt[d]/dx*100)+"%;height:100%;border-radius:3px;background:#378ADD'></div></div><span style='font-size:12px;font-weight:500;width:40px;text-align:right'>"+fk(dt[d])+"</span></div>";
+  }
 }
 
-// EXPORT
 function exportCSV(){
-  const ft=gFT();
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(['month,total,patrol',...ft.map(r=>r.join(','))].join('\n'));
-  a.download='opendoor_incidents.csv';a.click();
+  var ft=gFT();
+  var rows=["month,total,patrol"];
+  for(var i=0;i<ft.length;i++){rows.push(ft[i].join(","));}
+  var a=document.createElement("a");
+  a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(rows.join("\n"));
+  a.download="opendoor_incidents.csv";a.click();
 }
 
 initF();applyF();renderHeatmap();
