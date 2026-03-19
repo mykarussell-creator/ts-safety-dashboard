@@ -1,483 +1,483 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Security Spend Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Trust & Safety Dashboard — Opendoor Incident Reports</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root{
-  --bg:#f9f9f8;--surface:#fff;--surface2:#f1f0ec;
-  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);
-  --text:#1a1a1a;--text2:#666;--text3:#999;
-  --blue:#378ADD;--green:#1D9E75;--orange:#D85A30;--purple:#7F77DD;--amber:#BA7517;
-  --r:10px;--rs:6px;
-}
-@media(prefers-color-scheme:dark){
-  :root{--bg:#1a1a18;--surface:#252523;--surface2:#2e2e2b;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);--text:#f0efe8;--text2:#aaa;--text3:#555;}
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
-header{background:var(--surface);border-bottom:0.5px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;flex-wrap:wrap;gap:8px;}
-header h1{font-size:16px;font-weight:500;}
-header p{font-size:12px;color:var(--text2);}
-.main{max-width:1100px;margin:0 auto;padding:20px 16px;}
-.btn{padding:6px 14px;border:0.5px solid var(--border2);border-radius:var(--rs);background:transparent;color:var(--text);cursor:pointer;font-size:13px;transition:background .15s;}
-.btn:hover{background:var(--surface2);}
-.btn.active{background:var(--surface);border-color:var(--blue);color:var(--blue);font-weight:500;}
-.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue);}
-.btn.primary:hover{opacity:.9;}
-.btn.danger{color:#c0392b;border-color:rgba(192,57,43,.3);}
-.btn.danger:hover{background:rgba(192,57,43,.07);}
-.btn.amber{border-color:var(--amber);color:var(--amber);}
-.btn.amber.active{font-weight:500;}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
-.metric{background:var(--surface2);border-radius:var(--rs);padding:12px 14px;}
-.metric label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px;}
-.metric .val{font-size:20px;font-weight:500;}
-.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;}
-.card h2{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:14px;}
-.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;color:var(--text2);}
-.legend span{display:flex;align-items:center;gap:5px;}
-.legend i{width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0;}
-.chart-wrap{position:relative;width:100%;height:240px;}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
-table{width:100%;border-collapse:collapse;font-size:12px;}
-thead tr{border-bottom:0.5px solid var(--border2);}
-th{padding:8px;font-weight:500;color:var(--text2);text-align:right;white-space:nowrap;}
-th:first-child{text-align:left;}
-td{padding:6px 8px;border-bottom:0.5px solid var(--border);text-align:right;}
-td:first-child{text-align:left;}
-tfoot td{font-weight:500;border-top:0.5px solid var(--border2);border-bottom:none;background:var(--surface2);}
-.note{font-size:12px;color:var(--text2);background:var(--surface2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;border-left:3px solid var(--amber);}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;}
-.overlay.open{display:flex;}
-.modal{background:var(--surface);border-radius:var(--r);padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
-.modal h2{font-size:16px;font-weight:500;margin-bottom:18px;}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.fi{display:flex;flex-direction:column;gap:4px;}
-.fi.full{grid-column:1/-1;}
-.fi.row{flex-direction:row;align-items:center;gap:8px;}
-label.lbl{font-size:12px;color:var(--text2);font-weight:500;}
-input,select{padding:7px 10px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg);color:var(--text);font-size:13px;width:100%;}
-input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(55,138,221,.15);}
-input[type=checkbox]{width:auto;}
-.factions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
-.row-actions button{border:none;background:transparent;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 5px;border-radius:3px;}
-.row-actions button:hover{background:var(--surface2);color:var(--text);}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#fff;--bg2:#f5f5f3;--bg3:#efefed;--text:#1a1a18;--text2:#6b6b67;--text3:#9b9b97;--border:rgba(0,0,0,0.12);--r:8px;--rl:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f0efeb;color:var(--text);font-size:14px;min-height:100vh}
+.hdr{background:var(--bg);border-bottom:0.5px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:100}
+.logo{font-size:15px;font-weight:600}.logo span{color:#378ADD}
+.hdr-sub{font-size:12px;color:var(--text3);border-left:1px solid var(--border);padding-left:16px}
+.hdr-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live{font-size:11px;color:#1D9E75}
+.btn{font-size:12px;padding:6px 14px;border-radius:var(--r);border:0.5px solid rgba(0,0,0,0.2);background:var(--bg);color:var(--text);cursor:pointer}
+.btn:hover{background:var(--bg2)}
+.main{padding:20px 24px;max-width:1400px;margin:0 auto}
+.fbar{display:flex;gap:10px;align-items:center;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:10px 16px;margin-bottom:16px;flex-wrap:wrap}
+.fbar label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.fbar select{font-size:12px;padding:5px 8px;border-radius:var(--r);border:0.5px solid var(--border);background:var(--bg2);color:var(--text);height:30px;cursor:pointer}
+.fcnt{margin-left:auto;font-size:11px;color:var(--text3)}
+.tabs{display:flex;gap:2px;border-bottom:0.5px solid var(--border);margin-bottom:16px;overflow-x:auto}
+.tb{padding:9px 14px;font-size:13px;color:var(--text2);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;margin-bottom:-1px}
+.tb:hover{color:var(--text)}.tb.active{color:var(--text);font-weight:500;border-bottom-color:var(--text)}
+.mg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.mc{background:var(--bg2);border-radius:var(--r);padding:14px 16px}
+.ml{font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.mv{font-size:26px;font-weight:500;line-height:1}
+.ms{font-size:11px;color:var(--text3);margin-top:5px}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:14px}
+.ct{font-size:13px;font-weight:500;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:14px;margin-bottom:14px}
+.g22{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--text2);font-weight:500;text-align:left;padding:5px 8px;border-bottom:0.5px solid var(--border);font-size:11px}
+td{padding:7px 8px;border-bottom:0.5px solid var(--border)}
+tr:last-child td{border-bottom:none}
+.lg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:10px;font-size:12px;color:var(--text2)}
+.li{display:flex;align-items:center;gap:4px}
+.sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.tp{display:none}.tp.active{display:block}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500}
+.b-green{background:#EAF3DE;color:#3B6D11}
+.b-amber{background:#FAEEDA;color:#854F0B}
+.b-red{background:#FCEBEB;color:#A32D2D}
+.b-blue{background:#E6F1FB;color:#185FA5}
+.hbar-r{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.hbar-l{font-size:10px;color:var(--text3);width:20px;text-align:right}
+.hbar-t{flex:1;background:var(--bg2);border-radius:3px;height:10px;overflow:hidden}
+.hbar-f{height:100%;border-radius:3px}
+.hbar-v{font-size:10px;color:var(--text2);width:36px;text-align:right}
+.insight{background:var(--bg2);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;border-left:3px solid}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px}
 </style>
 </head>
 <body>
-
-<header>
-  <div>
-    <h1>Security Spend Dashboard</h1>
-    <p>Securitas · Protos · End2End</p>
+<div class="hdr">
+  <div class="logo">Opendoor <span>Trust &amp; Safety</span></div>
+  <div class="hdr-sub">3 Snowflake sources · through Mar 19, 2026</div>
+  <div class="hdr-r">
+    <div class="dot"></div><span class="live">Live</span>
+    <button class="btn" onclick="exportCSV()">Export CSV</button>
+    <button class="btn" onclick="window.print()">Print</button>
   </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <button class="btn" onclick="openImport()">Import JSON</button>
-    <button class="btn" onclick="exportData()">Export</button>
-    <button class="btn danger" onclick="resetData()">Reset data</button>
-    <button class="btn primary" onclick="openAddForm()">+ Add entry</button>
-  </div>
-</header>
+</div>
 
 <div class="main">
-  <div class="toolbar" id="yearTabs"></div>
-  <div id="noteArea"></div>
-  <div class="metrics" id="metricsRow"></div>
-  <div class="tabs" id="viewTabs"></div>
-  <div id="viewContent"></div>
-</div>
+  <div class="fbar">
+    <label>Date range</label>
+    <select id="sd" onchange="applyF()"></select>
+    <span style="font-size:12px;color:var(--text3)">→</span>
+    <select id="ed" onchange="applyF()"></select>
+    <span style="font-size:12px;color:var(--text3);margin-left:8px">|</span>
+    <label style="margin-left:8px">Incident type</label>
+    <select id="tf" onchange="applyF()"><option value="all">All types</option></select>
+    <label style="margin-left:8px">Market</label>
+    <select id="mf" onchange="applyF()"><option value="all">All markets</option></select>
+    <span class="fcnt" id="fcnt"></span>
+  </div>
 
-<!-- Form modal -->
-<div class="overlay" id="formOverlay">
-  <div class="modal">
-    <h2 id="formTitle">Add entry</h2>
-    <div class="fg">
-      <div class="fi"><label class="lbl">Year</label><select id="fYear"><option>2024</option><option selected>2025</option><option>2026</option><option>2027</option></select></div>
-      <div class="fi"><label class="lbl">Month</label><select id="fMonth"><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select></div>
-      <div class="fi"><label class="lbl">Incident rate (%)</label><input type="number" id="fIncRate" step="0.01" placeholder="e.g. 2.45"/></div>
-      <div class="fi"><label class="lbl">Incident count</label><input type="number" id="fIncidents" placeholder="e.g. 188"/></div>
-      <div class="fi"><label class="lbl">Number of homes</label><input type="number" id="fHomes" placeholder="e.g. 7822"/></div>
-      <div class="fi"><label class="lbl">Securitas spend ($)</label><input type="number" id="fSecuritas" step="0.01" placeholder="e.g. 107872.56"/></div>
-      <div class="fi"><label class="lbl">Protos spend ($)</label><input type="number" id="fProtos" step="0.01" placeholder="e.g. 2158.76"/></div>
-      <div class="fi"><label class="lbl">End2End spend ($)</label><input type="number" id="fEnd2End" step="0.01" placeholder="e.g. 3072.00"/></div>
-      <div class="fi full"><label class="lbl">Securitas projection ($) <span style="color:var(--amber);font-size:11px;">projection entries only</span></label><input type="number" id="fProjection" step="0.01" placeholder="e.g. 42695.47"/></div>
-      <div class="fi full row"><input type="checkbox" id="fIsProj"/><label class="lbl" for="fIsProj" style="cursor:pointer;">Mark as projection entry</label></div>
+  <div class="tabs">
+    <button class="tb active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tb" onclick="showTab('rate',this)">Incident rate</button>
+    <button class="tb" onclick="showTab('knox',this)">Knox intelligence</button>
+    <button class="tb" onclick="showTab('types',this)">Incident types</button>
+    <button class="tb" onclick="showTab('markets',this)">Markets</button>
+    <button class="tb" onclick="showTab('source',this)">Reporter source</button>
+    <button class="tb" onclick="showTab('entry',this)">Mode of entry</button>
+    <button class="tb" onclick="showTab('heatmap',this)">Activity heatmap</button>
+  </div>
+
+  <div id="tab-overview" class="tp active">
+    <div class="mg">
+      <div class="mc"><div class="ml">Incidents in range</div><div class="mv" id="ov-total">—</div><div class="ms" id="ov-range">—</div></div>
+      <div class="mc"><div class="ml">Patrol dispatched</div><div class="mv" id="ov-patrol">—</div><div class="ms" id="ov-pp">—</div></div>
+      <div class="mc"><div class="ml">Top incident type</div><div class="mv" id="ov-type">—</div><div class="ms" id="ov-type-s">—</div></div>
+      <div class="mc"><div class="ml">Top market</div><div class="mv" id="ov-mkt">—</div><div class="ms" id="ov-mkt-s">—</div></div>
     </div>
-    <div class="factions">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn danger" id="deleteBtn" onclick="deleteEntry()" style="display:none">Delete</button>
-      <button class="btn primary" onclick="saveEntry()">Save</button>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Monthly volume — total vs patrol dispatched</div>
+        <div class="lg"><div class="li"><div class="sw" style="background:#B5D4F4"></div>Total</div><div class="li"><div class="sw" style="background:#E24B4A"></div>Patrol dispatched</div></div>
+        <div style="position:relative;width:100%;height:230px"><canvas id="trendC"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Highest tier distribution</div>
+        <div style="position:relative;width:100%;height:160px"><canvas id="tierC"></canvas></div>
+        <div class="lg" id="tier-lg" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Tier breakdown — count &amp; patrol</div>
+      <table><thead><tr><th>Tier</th><th>Incidents</th><th>Patrol dispatched</th><th>Patrol %</th></tr></thead><tbody id="tier-tb"></tbody></table>
     </div>
   </div>
-</div>
 
-<!-- Import modal -->
-<div class="overlay" id="importOverlay">
-  <div class="modal">
-    <h2>Import data (JSON)</h2>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Paste exported JSON to restore or merge data. Existing entries for the same year/month will be overwritten.</p>
-    <textarea id="importText" style="width:100%;height:120px;font-family:monospace;font-size:11px;padding:8px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg);color:var(--text);resize:vertical;" placeholder='[{"year":2025,"month":"January",...}]'></textarea>
-    <div class="factions">
-      <button class="btn" onclick="closeImport()">Cancel</button>
-      <button class="btn primary" onclick="doImport()">Import</button>
+  <div id="tab-rate" class="tp">
+    <div class="mg">
+      <div class="mc"><div class="ml">Avg incident rate (last 90d)</div><div class="mv" id="rate-cur">—</div><div class="ms">Incidents per active listing</div></div>
+      <div class="mc"><div class="ml">Peak rate (all time)</div><div class="mv">11.35%</div><div class="ms">Sep 2024</div></div>
+      <div class="mc"><div class="ml">Rate trend (2025)</div><div class="mv" style="color:#1D9E75">↓ Declining</div><div class="ms">vs 2024 peak</div></div>
+      <div class="mc"><div class="ml">Highest rate market</div><div class="mv">NY/NJ</div><div class="ms">22.6% (last 90d)</div></div>
+    </div>
+    <div class="card">
+      <div class="ct">Normalized incident rate over time — incidents per active listing (%)</div>
+      <div class="lg"><div class="li"><div class="sw" style="background:#7F77DD"></div>Avg incident rate</div><div class="li"><div class="sw" style="background:#B5D4F4"></div>Raw incident count</div></div>
+      <div style="position:relative;width:100%;height:260px"><canvas id="rateC"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Current incident rate by market — last 90 days (top 20)</div>
+      <div style="position:relative;width:100%;height:320px"><canvas id="rateMktC"></canvas></div>
+    </div>
+  </div>
+
+  <div id="tab-knox" class="tp">
+    <div class="mg">
+      <div class="mc"><div class="ml">Avg incident index</div><div class="mv" id="knox-idx">2.63</div><div class="ms">No security system</div></div>
+      <div class="mc"><div class="ml">SmartRent avg index</div><div class="mv" style="color:#1D9E75">2.31</div><div class="ms">↓ 12% vs no system</div></div>
+      <div class="mc"><div class="ml">Knox avg index</div><div class="mv" style="color:#1D9E75">1.76</div><div class="ms">↓ 33% vs no system</div></div>
+      <div class="mc"><div class="ml">Reclassified (2026)</div><div class="mv">32%</div><div class="ms">Reported vs ALFRED current tier</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Monthly incident index &amp; reclassification rate (2023–2026)</div>
+        <div class="lg">
+          <div class="li"><div class="sw" style="background:#7F77DD"></div>Avg incident index</div>
+          <div class="li"><div class="sw" style="background:#EF9F27"></div>Reclassification rate %</div>
+        </div>
+        <div style="position:relative;width:100%;height:240px"><canvas id="knoxC"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Security system impact</div>
+        <div style="margin-bottom:12px">
+          <div class="insight" style="border-left-color:#E24B4A">
+            <p style="font-size:12px;color:var(--text2);margin-bottom:3px">No security system</p>
+            <p style="font-size:20px;font-weight:500">24,094 incidents</p>
+            <p style="font-size:11px;color:var(--text3);margin-top:2px">Avg index: 2.63 · Patrol: 2,853</p>
+          </div>
+          <div class="insight" style="border-left-color:#EF9F27">
+            <p style="font-size:12px;color:var(--text2);margin-bottom:3px">SmartRent installed</p>
+            <p style="font-size:20px;font-weight:500">1,051 incidents</p>
+            <p style="font-size:11px;color:var(--text3);margin-top:2px">Avg index: 2.31 · Patrol: 112 · <strong>↓12% severity</strong></p>
+          </div>
+          <div class="insight" style="border-left-color:#1D9E75">
+            <p style="font-size:12px;color:var(--text2);margin-bottom:3px">Knox security installed</p>
+            <p style="font-size:20px;font-weight:500">21 incidents</p>
+            <p style="font-size:11px;color:var(--text3);margin-top:2px">Avg index: 1.76 · Patrol: 4 · <strong>↓33% severity</strong></p>
+          </div>
+        </div>
+        <div class="ct" style="margin-top:4px">ALFRED tier reclassification</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:8px">ALFRED reviews reported tiers and adjusts them. High reclassification rates indicate triage accuracy issues.</p>
+        <div style="position:relative;width:100%;height:100px"><canvas id="reclassC"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">ALFRED reported vs current tier — incident count by tier pair</div>
+      <table>
+        <thead><tr><th>Reported tier</th><th>Current tier</th><th>Incidents</th><th>Avg incident index</th><th>Status</th></tr></thead>
+        <tbody id="alfred-tb"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab-types" class="tp">
+    <div class="mg" id="type-mg"></div>
+    <div class="g22">
+      <div class="card"><div class="ct">Incidents by type</div><div style="position:relative;width:100%;height:360px"><canvas id="typeC"></canvas></div></div>
+      <div class="card"><div class="ct">All incident types</div><div style="max-height:380px;overflow-y:auto"><table><thead><tr><th>Type</th><th>Count</th><th>Patrol</th><th>Patrol %</th></tr></thead><tbody id="type-tb"></tbody></table></div></div>
+    </div>
+  </div>
+
+  <div id="tab-markets" class="tp">
+    <div class="mg" id="mkt-mg"></div>
+    <div class="g22">
+      <div class="card"><div class="ct">Incidents by market (top 15)</div><div style="position:relative;width:100%;height:360px"><canvas id="mktC"></canvas></div></div>
+      <div class="card"><div class="ct">All markets</div><div style="max-height:380px;overflow-y:auto"><table><thead><tr><th>Market</th><th>Incidents</th><th>Patrol</th><th>Patrol %</th></tr></thead><tbody id="mkt-tb"></tbody></table></div></div>
+    </div>
+  </div>
+
+  <div id="tab-source" class="tp">
+    <div class="mg" id="src-mg"></div>
+    <div class="g22">
+      <div class="card"><div class="ct">Incidents by reporter source</div><div style="position:relative;width:100%;height:280px"><canvas id="srcC"></canvas></div></div>
+      <div class="card"><div class="ct">All sources</div><table><thead><tr><th>Source</th><th>Count</th><th>Share</th></tr></thead><tbody id="src-tb"></tbody></table></div>
+    </div>
+  </div>
+
+  <div id="tab-entry" class="tp">
+    <div class="mg" id="entry-mg"></div>
+    <div class="g22">
+      <div class="card"><div class="ct">Mode of entry</div><div style="position:relative;width:100%;height:280px"><canvas id="modeC"></canvas></div></div>
+      <div class="card"><div class="ct">Physical vs digital</div><div id="entry-ins"></div></div>
+    </div>
+  </div>
+
+  <div id="tab-heatmap" class="tp">
+    <div class="mg">
+      <div class="mc"><div class="ml">Peak day</div><div class="mv">Mon–Wed</div><div class="ms">Highest weekly volume</div></div>
+      <div class="mc"><div class="ml">Peak hours</div><div class="mv">3–6 PM</div><div class="ms">Consistent across days</div></div>
+      <div class="mc"><div class="ml">Quietest time</div><div class="mv">4–7 AM</div><div class="ms">Lowest incident rate</div></div>
+      <div class="mc"><div class="ml">Weekend vs weekday</div><div class="mv">–45%</div><div class="ms">Weekend avg vs weekday</div></div>
+    </div>
+    <div class="card">
+      <div class="ct">Volume — day of week × hour of day</div>
+      <div id="hmg" style="display:grid;grid-template-columns:36px repeat(24,1fr);gap:2px;font-size:9px;color:var(--text3)"></div>
+      <div class="lg" style="margin-top:10px">
+        <div class="li"><div class="sw" style="background:#EAF3DE"></div>Low</div>
+        <div class="li"><div class="sw" style="background:#FAC775"></div>Moderate</div>
+        <div class="li"><div class="sw" style="background:#EF9F27"></div>High</div>
+        <div class="li"><div class="sw" style="background:#E24B4A"></div>Peak</div>
+      </div>
+    </div>
+    <div class="g22">
+      <div class="card" style="margin-bottom:0"><div class="ct">By hour (all days)</div><div id="hr-bars"></div></div>
+      <div class="card" style="margin-bottom:0"><div class="ct">By day (all hours)</div><div id="day-bars"></div></div>
     </div>
   </div>
 </div>
 
 <script>
-const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const SHORT   = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const C = { sec:"#378ADD", pro:"#1D9E75", e2e:"#D85A30", tot:"#7F77DD", proj:"#BA7517" };
-const DATA_VERSION = 4;
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const TREND=[["2021-01-01","43","9"],["2021-02-01","35","10"],["2021-03-01","41","15"],["2021-04-01","53","15"],["2021-05-01","75","24"],["2021-06-01","140","35"],["2021-07-01","161","45"],["2021-08-01","261","65"],["2021-09-01","264","58"],["2021-10-01","365","118"],["2021-11-01","371","80"],["2021-12-01","378","94"],["2022-01-01","414","99"],["2022-02-01","480","100"],["2022-03-01","717","101"],["2022-04-01","597","70"],["2022-05-01","677","98"],["2022-06-01","643","105"],["2022-07-01","1056","136"],["2022-08-01","1099","158"],["2022-09-01","988","160"],["2022-10-01","826","126"],["2022-11-01","687","82"],["2022-12-01","506","97"],["2023-01-01","498","110"],["2023-02-01","384","100"],["2023-03-01","377","88"],["2023-04-01","299","43"],["2023-05-01","361","51"],["2023-06-01","278","17"],["2023-07-01","311","0"],["2023-08-01","243","0"],["2023-09-01","278","0"],["2023-10-01","269","0"],["2023-11-01","207","0"],["2023-12-01","236","0"],["2024-01-01","294","0"],["2024-02-01","304","0"],["2024-03-01","335","0"],["2024-04-01","401","0"],["2024-05-01","473","0"],["2024-06-01","771","0"],["2024-07-01","768","29"],["2024-08-01","709","98"],["2024-09-01","679","72"],["2024-10-01","492","51"],["2024-11-01","388","40"],["2024-12-01","347","27"],["2025-01-01","407","35"],["2025-02-01","458","41"],["2025-03-01","437","56"],["2025-04-01","377","44"],["2025-05-01","339","15"],["2025-06-01","356","19"],["2025-07-01","390","26"],["2025-08-01","368","22"],["2025-09-01","282","20"],["2025-10-01","240","17"],["2025-11-01","192","10"],["2025-12-01","172","6"],["2026-01-01","215","10"],["2026-02-01","192","15"],["2026-03-01","118","7"]];
 
-const SEED = [
-  // 2024 — Securitas only
-  {year:2024,month:"January",   incRate:0,incidents:0,homes:0,securitas:48967.16, protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"February",  incRate:0,incidents:0,homes:0,securitas:55704.40, protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"March",     incRate:0,incidents:0,homes:0,securitas:55157.12, protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"April",     incRate:0,incidents:0,homes:0,securitas:53715.62, protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"May",       incRate:0,incidents:0,homes:0,securitas:66039.93, protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"June",      incRate:0,incidents:0,homes:0,securitas:120591.26,protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"July",      incRate:0,incidents:0,homes:0,securitas:168878.22,protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"August",    incRate:0,incidents:0,homes:0,securitas:149927.41,protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"September", incRate:0,incidents:0,homes:0,securitas:130467.05,protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"October",   incRate:0,incidents:0,homes:0,securitas:98989.15, protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"November",  incRate:0,incidents:0,homes:0,securitas:102469.69,protos:0,end2end:0,projection:0,isProj:false},
-  {year:2024,month:"December",  incRate:0,incidents:0,homes:0,securitas:97312.61, protos:0,end2end:0,projection:0,isProj:false},
-  // 2025 — All vendors
-  {year:2025,month:"January",   incRate:2.25,incidents:176,homes:7822, securitas:107872.56,protos:2158.76, end2end:3072.00, projection:0,isProj:false},
-  {year:2025,month:"February",  incRate:2.49,incidents:208,homes:8353, securitas:138294.71,protos:3542.65, end2end:4991.25, projection:0,isProj:false},
-  {year:2025,month:"March",     incRate:2.38,incidents:201,homes:8445, securitas:144353.20,protos:3598.40, end2end:3110.00, projection:0,isProj:false},
-  {year:2025,month:"April",     incRate:2.45,incidents:189,homes:7714, securitas:116339.57,protos:4416.59, end2end:2189.00, projection:0,isProj:false},
-  {year:2025,month:"May",       incRate:2.42,incidents:157,homes:6488, securitas:108461.26,protos:2666.92, end2end:1161.00, projection:0,isProj:false},
-  {year:2025,month:"June",      incRate:3.31,incidents:187,homes:5650, securitas:112760.98,protos:4448.83, end2end:2341.00, projection:0,isProj:false},
-  {year:2025,month:"July",      incRate:3.83,incidents:182,homes:4752, securitas:108820.23,protos:4473.82, end2end:6160.88, projection:0,isProj:false},
-  {year:2025,month:"August",    incRate:4.40,incidents:188,homes:1944, securitas:90436.73, protos:5596.92, end2end:4537.92, projection:0,isProj:false},
-  {year:2025,month:"September", incRate:3.88,incidents:150,homes:1780, securitas:76404.73, protos:3623.14, end2end:1904.75, projection:0,isProj:false},
-  {year:2025,month:"October",   incRate:3.20,incidents:112,homes:1586, securitas:70881.94, protos:4646.27, end2end:6715.10, projection:0,isProj:false},
-  {year:2025,month:"November",  incRate:3.16,incidents:107,homes:1374, securitas:60852.06, protos:250.00,  end2end:2363.21, projection:0,isProj:false},
-  {year:2025,month:"December",  incRate:2.44,incidents:85, homes:1418, securitas:64929.61, protos:0,       end2end:2718.50, projection:0,isProj:false},
-  // 2026 actuals
-  {year:2026,month:"January",   incRate:3.06,incidents:107,homes:1455, securitas:51998.98, protos:0,       end2end:0,       projection:0,isProj:false},
-  {year:2026,month:"February",  incRate:2.81,incidents:106,homes:1596, securitas:53311.16, protos:2078.15, end2end:385.25,  projection:0,isProj:false},
-  // 2026 projections
-  {year:2026,month:"January",   incRate:2.25,incidents:176,homes:3096, securitas:107872.56,protos:0,end2end:0,projection:42695.47,  isProj:true},
-  {year:2026,month:"February",  incRate:2.49,incidents:208,homes:3489, securitas:138294.71,protos:0,end2end:0,projection:57762.04,  isProj:true},
-  {year:2026,month:"March",     incRate:2.38,incidents:201,homes:3958, securitas:144353.20,protos:0,end2end:0,projection:67652.38,  isProj:true},
-  {year:2026,month:"April",     incRate:2.45,incidents:189,homes:4576, securitas:116339.57,protos:0,end2end:0,projection:69010.91,  isProj:true},
-  {year:2026,month:"May",       incRate:2.42,incidents:157,homes:5011, securitas:108461.26,protos:0,end2end:0,projection:83775.06,  isProj:true},
-  {year:2026,month:"June",      incRate:3.31,incidents:187,homes:5490, securitas:112760.98,protos:0,end2end:0,projection:109576.54, isProj:true},
-  {year:2026,month:"July",      incRate:3.83,incidents:182,homes:6134, securitas:108820.23,protos:0,end2end:0,projection:140469.10, isProj:true},
-  {year:2026,month:"August",    incRate:4.40,incidents:188,homes:6661, securitas:90436.73, protos:0,end2end:0,projection:309876.06, isProj:true},
-  {year:2026,month:"September", incRate:3.88,incidents:150,homes:7256, securitas:76404.73, protos:0,end2end:0,projection:311456.58, isProj:true},
-  {year:2026,month:"October",   incRate:3.20,incidents:112,homes:7922, securitas:70881.94, protos:0,end2end:0,projection:354052.16, isProj:true},
-  {year:2026,month:"November",  incRate:3.16,incidents:107,homes:9121, securitas:60852.06, protos:0,end2end:0,projection:403953.16, isProj:true},
-  {year:2026,month:"December",  incRate:2.44,incidents:85, homes:10550,securitas:64929.61, protos:0,end2end:0,projection:483079.96, isProj:true},
-];
+const RATE=[["2021-01-01","0.0079"],["2021-02-01","0.0081"],["2021-03-01","0.0098"],["2021-04-01","0.0078"],["2021-05-01","0.0085"],["2021-06-01","0.0115"],["2021-07-01","0.0081"],["2021-08-01","0.0094"],["2021-09-01","0.0099"],["2021-10-01","0.0089"],["2021-11-01","0.0110"],["2021-12-01","0.0126"],["2022-01-01","0.0102"],["2022-02-01","0.0156"],["2022-03-01","0.0242"],["2022-04-01","0.0225"],["2022-05-01","0.0261"],["2022-06-01","0.0270"],["2022-07-01","0.0272"],["2022-08-01","0.0361"],["2022-09-01","0.0386"],["2022-10-01","0.0319"],["2022-11-01","0.0348"],["2022-12-01","0.0355"],["2023-01-01","0.0163"],["2023-02-01","0.0220"],["2023-03-01","0.0275"],["2023-04-01","0.0268"],["2023-05-01","0.0339"],["2023-06-01","0.0371"],["2023-07-01","0.0370"],["2023-08-01","0.0446"],["2023-09-01","0.0554"],["2023-10-01","0.0437"],["2023-11-01","0.0492"],["2023-12-01","0.0514"],["2024-01-01","0.0302"],["2024-02-01","0.0421"],["2024-03-01","0.0479"],["2024-04-01","0.0451"],["2024-05-01","0.0577"],["2024-06-01","0.0850"],["2024-07-01","0.0855"],["2024-08-01","0.1007"],["2024-09-01","0.1135"],["2024-10-01","0.0900"],["2024-11-01","0.0948"],["2024-12-01","0.0910"],["2025-01-01","0.0339"],["2025-02-01","0.0550"],["2025-03-01","0.0656"],["2025-04-01","0.0542"],["2025-05-01","0.0619"],["2025-06-01","0.0735"],["2025-07-01","0.0799"],["2025-08-01","0.0980"],["2025-09-01","0.1099"],["2025-10-01","0.0912"],["2025-11-01","0.0949"],["2025-12-01","0.0902"],["2026-01-01","0.0463"],["2026-02-01","0.0518"],["2026-03-01","0.0552"]];
 
-var data = [], activeYear = 2025, activeMode = "actual", activeView = "overview", editingKey = null, charts = {};
+const RATE_MKT=[["New York New Jersey","0.2257"],["Riverside","0.1541"],["Sacramento","0.1540"],["Albuquerque Nm","0.1393"],["Oklahoma City Ok","0.1117"],["St Louis","0.1104"],["Detroit Mi","0.1062"],["Columbus Oh","0.1044"],["Kansas City","0.1013"],["Cincinnati Oh","0.0984"],["San Diego Ca","0.0979"],["Richmond Va","0.0955"],["Charleston Sc","0.0892"],["Northern Colorado","0.0853"],["Salt Lake City","0.0836"],["Minneapolis","0.0834"],["Phoenix","0.0717"],["Las Vegas","0.0711"],["Colorado Springs Co","0.0685"],["Austin","0.0676"]];
 
-function loadData() {
-  var ver = parseInt(localStorage.getItem("secSpendVer") || "0");
-  if (ver < DATA_VERSION) {
-    var stored = localStorage.getItem("secSpendData");
-    var userAdded = [];
-    if (stored) {
-      try {
-        var old = JSON.parse(stored);
-        userAdded = old.filter(function(o) {
-          return !SEED.some(function(s) { return s.year===o.year && s.month===o.month && !!s.isProj===!!o.isProj; });
-        });
-      } catch(e) {}
-    }
-    data = SEED.map(function(s) { return Object.assign({}, s); }).concat(userAdded);
-    saveData();
-    localStorage.setItem("secSpendVer", String(DATA_VERSION));
-  } else {
-    var s = localStorage.getItem("secSpendData");
-    if (s) { try { data = JSON.parse(s); } catch(e) { data = SEED.map(function(s){return Object.assign({},s);}); } }
-    else { data = SEED.map(function(s){return Object.assign({},s);}); saveData(); }
-  }
+const KNOX_MONTHLY=[["2023-01-01","498","148","4.83"],["2023-02-01","384","106","4.57"],["2023-03-01","377","124","3.97"],["2023-04-01","299","96","3.00"],["2023-05-01","361","134","2.84"],["2023-06-01","278","89","2.98"],["2023-07-01","311","78","2.23"],["2023-08-01","243","45","1.80"],["2023-09-01","278","64","2.35"],["2023-10-01","269","54","1.86"],["2023-11-01","207","42","2.11"],["2023-12-01","236","54","1.97"],["2024-01-01","294","46","1.85"],["2024-02-01","303","71","1.85"],["2024-03-01","335","80","1.93"],["2024-04-01","400","110","1.79"],["2024-05-01","473","79","1.94"],["2024-06-01","771","118","1.82"],["2024-07-01","768","173","2.08"],["2024-08-01","708","149","1.97"],["2024-09-01","679","163","2.12"],["2024-10-01","492","125","2.16"],["2024-11-01","388","111","2.35"],["2024-12-01","347","95","2.41"],["2025-01-01","407","114","2.32"],["2025-02-01","458","119","2.32"],["2025-03-01","437","109","2.16"],["2025-04-01","377","97","1.89"],["2025-05-01","339","69","1.95"],["2025-06-01","356","109","1.94"],["2025-07-01","390","107","1.99"],["2025-08-01","368","115","1.89"],["2025-09-01","282","78","2.02"],["2025-10-01","240","73","2.07"],["2025-11-01","192","65","2.09"],["2025-12-01","172","57","2.04"],["2026-01-01","215","68","1.83"],["2026-02-01","192","55","1.65"],["2026-03-01","165","49","1.61"]];
+
+const ALFRED=[["3","","1956","2.86"],["0","","1876","2.32"],["2","","1839","1.81"],["3","3","1611","2.20"],["4","4","1498","2.32"],["6","","1426","2.39"],["8","","1368","3.99"],["8","5","1104","5.61"],["4","","897","2.19"],["8","6","865","2.50"],["0","5","822","2.25"],["5","","818","2.72"],["2","2","704","1.73"],["0","0","691","2.46"],["6","6","569","3.24"]];
+
+const TIERS=[["1","1158","356"],["2","3598","451"],["3","3868","1311"],["4","980","97"]];
+const TC={"1":"#1D9E75","2":"#EF9F27","3":"#E24B4A","4":"#A32D2D"};
+
+const TYPES=[["activity","3505","1226"],["vandalism","2599","468"],["theft","1272","67"],["trespassing","1227","0"],["scam","1050","123"],["scam_rental_sent_money","1007","150"],["other","989","32"],["unknown","759","92"],["scam_rental","748","15"],["damage_vandalism","678","39"],["encounter_person_present","643","113"],["items","621","172"],["encounter_person_possible","580","63"],["uninviting_home_unlocked","568","47"],["signs_of_squatters","527","0"],["paraphernalia","421","52"],["break_in","389","101"],["uninviting_general","328","21"],["drugs","270","55"],["injury","163","38"]];
+
+const MARKETS=[["Phoenix","4113","593"],["Atlanta","2643","270"],["Dallas","2293","198"],["Los Angeles","1558","232"],["Sacramento","1294","232"],["Houston","1081","101"],["Riverside","1056","156"],["Las Vegas","800","101"],["Orlando","779","78"],["Charlotte","647","82"],["Jacksonville","641","77"],["Tampa","587","53"],["Portland","477","101"],["San Antonio","462","58"],["Raleigh","437","32"],["Tucson","429","96"],["Austin","424","57"],["Denver","400","48"],["St Louis","281","12"],["Indianapolis In","276","11"]];
+
+const SOURCES=[["security_company","5620"],["agent","5291"],["opendoor_employee","3250"],["victim","2733"],["customer","2168"],["neighbor","1983"],["cleaning_company","1495"],["other","1223"],["general_contractor","576"],["inspector","279"],["law_enforcement","240"],["appraiser","181"]];
+
+const MODES=[["unknown","3984"],["forced_entry","2802"],["no_entry","1768"],["unforced_entry","1349"],["buyer_app","1244"],["other","659"],["phone_call","67"],["sms_message","57"],["keypad_reentry","22"]];
+
+const HM=[["0","0","106"],["0","1","61"],["0","2","29"],["0","3","9"],["0","4","11"],["0","12","8"],["0","13","36"],["0","14","93"],["0","15","183"],["0","16","262"],["0","17","236"],["0","18","248"],["0","19","232"],["0","20","242"],["0","21","219"],["0","22","216"],["0","23","168"],["1","0","121"],["1","1","53"],["1","2","37"],["1","3","15"],["1","4","18"],["1","11","17"],["1","12","76"],["1","13","218"],["1","14","408"],["1","15","675"],["1","16","587"],["1","17","430"],["1","18","440"],["1","19","356"],["1","20","367"],["1","21","316"],["1","22","292"],["1","23","237"],["2","0","150"],["2","1","90"],["2","2","54"],["2","3","15"],["2","4","6"],["2","11","12"],["2","12","73"],["2","13","213"],["2","14","320"],["2","15","506"],["2","16","529"],["2","17","410"],["2","18","386"],["2","19","348"],["2","20","344"],["2","21","325"],["2","22","332"],["2","23","235"],["3","0","151"],["3","1","81"],["3","2","44"],["3","3","18"],["3","4","8"],["3","11","16"],["3","12","68"],["3","13","169"],["3","14","286"],["3","15","427"],["3","16","384"],["3","17","378"],["3","18","404"],["3","19","333"],["3","20","334"],["3","21","318"],["3","22","331"],["3","23","236"],["4","0","150"],["4","1","99"],["4","2","45"],["4","3","13"],["4","4","15"],["4","11","8"],["4","12","65"],["4","13","155"],["4","14","294"],["4","15","410"],["4","16","387"],["4","17","353"],["4","18","337"],["4","19","296"],["4","20","301"],["4","21","279"],["4","22","282"],["4","23","234"],["5","0","121"],["5","1","96"],["5","2","34"],["5","3","12"],["5","4","6"],["5","10","5"],["5","11","17"],["5","12","58"],["5","13","177"],["5","14","263"],["5","15","464"],["5","16","405"],["5","17","360"],["5","18","325"],["5","19","315"],["5","20","296"],["5","21","269"],["5","22","257"],["5","23","218"],["6","0","104"],["6","1","78"],["6","2","28"],["6","3","4"],["6","4","2"],["6","12","11"],["6","13","32"],["6","14","77"],["6","15","174"],["6","16","256"],["6","17","297"],["6","18","255"],["6","19","216"],["6","20","215"],["6","21","178"],["6","22","201"],["6","23","175"]];
+
+const SC={security_company:"#E24B4A",agent:"#378ADD",opendoor_employee:"#EF9F27",victim:"#7F77DD",customer:"#1D9E75",neighbor:"#BA7517",cleaning_company:"#0F6E56",other:"#888780"};
+const MC={unknown:"#B4B2A9",forced_entry:"#E24B4A",unforced_entry:"#EF9F27",no_entry:"#639922",buyer_app:"#378ADD",other:"#888780",phone_call:"#1D9E75",sms_message:"#BA7517",keypad_reentry:"#185FA5"};
+const MKC=["#378ADD","#E24B4A","#1D9E75","#EF9F27","#7F77DD","#BA7517","#185FA5","#0F6E56","#D85A30","#639922","#B4B2A9","#FAC775","#A32D2D","#B5D4F4","#C0DD97"];
+const TPC=["#E24B4A","#EF9F27","#378ADD","#1D9E75","#7F77DD","#BA7517","#D85A30","#888780","#0F6E56","#639922","#185FA5","#A32D2D","#FAC775","#B5D4F4","#9FE1CB","#B4B2A9","#F4C0D1","#C0DD97","#FAC775","#E6F1FB"];
+
+const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const fm=n=>Number(n).toLocaleString();
+const fk=n=>n>=1000?(n/1000).toFixed(1)+"k":String(Math.round(n));
+const fl=s=>(s||"").replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+const ml=r=>{const d=new Date(r[0]);return MN[d.getMonth()]+"'"+(d.getFullYear()+"").slice(2);};
+
+// Filters
+const allM=[...new Set(TREND.map(r=>r[0]))].sort();
+function initF(){
+  const sd=document.getElementById('sd'),ed=document.getElementById('ed');
+  allM.forEach(m=>{sd.innerHTML+=`<option value="${m}">${m}</option>`;ed.innerHTML+=`<option value="${m}">${m}</option>`;});
+  ed.value=allM[allM.length-1];
+  TYPES.map(r=>r[0]).forEach(t=>document.getElementById('tf').innerHTML+=`<option value="${t}">${fl(t)}</option>`);
+  MARKETS.map(r=>r[0]).forEach(m=>document.getElementById('mf').innerHTML+=`<option value="${m}">${m}</option>`);
+}
+function gF(){return{s:document.getElementById('sd').value,e:document.getElementById('ed').value,t:document.getElementById('tf').value,m:document.getElementById('mf').value};}
+function gFT(){const f=gF();return TREND.filter(r=>r[0]>=f.s&&r[0]<=f.e);}
+function applyF(){const ft=gFT();document.getElementById('fcnt').textContent=fm(ft.reduce((a,r)=>a+ +r[1],0))+' incidents';renderCur();}
+
+// Charts
+const CH={};
+function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+
+let curTab='overview';
+function showTab(id,btn){
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  curTab=id;renderCur();
+}
+function renderCur(){
+  if(curTab==='overview')renderOverview();
+  else if(curTab==='rate')renderRate();
+  else if(curTab==='knox')renderKnox();
+  else if(curTab==='types')renderTypes();
+  else if(curTab==='markets')renderMarkets();
+  else if(curTab==='source')renderSource();
+  else if(curTab==='entry')renderEntry();
+  else if(curTab==='heatmap')renderHeatmap();
 }
 
-function saveData() { localStorage.setItem("secSpendData", JSON.stringify(data)); }
+// OVERVIEW
+function renderOverview(){
+  const ft=gFT(),f=gF();
+  const tot=ft.reduce((a,r)=>a+ +r[1],0),pat=ft.reduce((a,r)=>a+ +r[2],0);
+  document.getElementById('ov-total').textContent=fm(tot);
+  document.getElementById('ov-range').textContent=f.s+' → '+f.e;
+  document.getElementById('ov-patrol').textContent=fm(pat);
+  document.getElementById('ov-pp').textContent=(tot?Math.round(pat/tot*100):0)+'% of incidents';
+  document.getElementById('ov-type').textContent=fl(f.t!=='all'?f.t:TYPES[0][0]).split(' ')[0];
+  document.getElementById('ov-type-s').textContent=fm(+(f.t!=='all'?(TYPES.find(r=>r[0]===f.t)||TYPES[0])[1]:TYPES[0][1]))+' incidents';
+  document.getElementById('ov-mkt').textContent=f.m!=='all'?f.m:MARKETS[0][0];
+  document.getElementById('ov-mkt-s').textContent=fm(+(f.m!=='all'?(MARKETS.find(r=>r[0]===f.m)||MARKETS[0])[1]:MARKETS[0][1]))+' incidents';
 
-function resetData() {
-  if (!confirm("Reset all data to the original Google Sheets values? Any manually added entries will be lost.")) return;
-  localStorage.removeItem("secSpendData");
-  localStorage.removeItem("secSpendVer");
-  loadData();
-  renderAll();
-  alert("Data has been reset to original values.");
+  dc('trend');
+  CH.trend=new Chart(document.getElementById('trendC'),{type:'bar',
+    data:{labels:ft.map(ml),datasets:[{label:'Total',data:ft.map(r=>+r[1]),backgroundColor:'#B5D4F4',borderRadius:3},{label:'Patrol',data:ft.map(r=>+r[2]),backgroundColor:'#E24B4A',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:9},maxTicksLimit:16,maxRotation:45},grid:{display:false}},
+        y:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  dc('tier');
+  CH.tier=new Chart(document.getElementById('tierC'),{type:'doughnut',
+    data:{labels:TIERS.map(r=>'Tier '+r[0]),datasets:[{data:TIERS.map(r=>+r[1]),backgroundColor:TIERS.map(r=>TC[r[0]]),borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+  document.getElementById('tier-lg').innerHTML=TIERS.map(r=>`<div class="li"><div class="sw" style="background:${TC[r[0]]}"></div>Tier ${r[0]} (${fm(+r[1])})</div>`).join('');
+  document.getElementById('tier-tb').innerHTML=TIERS.map(r=>`<tr><td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${TC[r[0]]};flex-shrink:0"></span>Tier ${r[0]}</span></td><td>${fm(+r[1])}</td><td>${fm(+r[2])}</td><td>${Math.round(+r[2]/+r[1]*100)}%</td></tr>`).join('');
 }
 
-function getRows(year, mode) {
-  var isProj = mode === "proj";
-  return MONTHS.map(function(m) {
-    return data.find(function(d) { return d.year===year && d.month===m && !!d.isProj===isProj; }) || null;
+// INCIDENT RATE
+function renderRate(){
+  const lastRate=RATE.slice(-3).reduce((a,r)=>a+ +r[1],0)/3;
+  document.getElementById('rate-cur').textContent=(lastRate*100).toFixed(1)+'%';
+
+  dc('rate');
+  CH.rate=new Chart(document.getElementById('rateC'),{type:'bar',
+    data:{labels:RATE.map(r=>ml([r[0]])),datasets:[
+      {label:'Incident rate (%)',data:RATE.map(r=>(+r[1]*100).toFixed(2)),backgroundColor:'rgba(127,119,221,0.2)',borderColor:'#7F77DD',borderWidth:2,type:'line',tension:0.3,pointRadius:0,yAxisID:'y2'},
+      {label:'Raw count',data:TREND.map(r=>+r[1]),backgroundColor:'#B5D4F4',borderRadius:2,yAxisID:'y'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:9},maxTicksLimit:16,maxRotation:45},grid:{display:false}},
+        y:{position:'left',ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Count',color:'#888',font:{size:10}}},
+        y2:{position:'right',ticks:{color:'#7F77DD',font:{size:10},callback:v=>v+'%'},grid:{display:false},title:{display:true,text:'Rate %',color:'#7F77DD',font:{size:10}}}}}});
+
+  dc('rateMkt');
+  CH.rateMkt=new Chart(document.getElementById('rateMktC'),{type:'bar',
+    data:{labels:RATE_MKT.map(r=>r[0]),datasets:[{data:RATE_MKT.map(r=>(+r[1]*100).toFixed(1)),backgroundColor:RATE_MKT.map((_,i)=>+RATE_MKT[i][1]>0.15?'#E24B4A':+RATE_MKT[i][1]>0.09?'#EF9F27':'#B5D4F4'),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.raw+'%'}}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+}
+
+// KNOX INTELLIGENCE
+function renderKnox(){
+  dc('knox');
+  const labels=KNOX_MONTHLY.map(r=>ml([r[0]]));
+  const reclPct=KNOX_MONTHLY.map(r=>Math.round(+r[2]/+r[1]*100));
+  CH.knox=new Chart(document.getElementById('knoxC'),{type:'bar',
+    data:{labels,datasets:[
+      {label:'Reclassification %',data:reclPct,backgroundColor:'rgba(239,159,39,0.3)',borderColor:'#EF9F27',borderWidth:1.5,type:'bar',yAxisID:'y2'},
+      {label:'Avg incident index',data:KNOX_MONTHLY.map(r=>+r[3]),borderColor:'#7F77DD',backgroundColor:'transparent',borderWidth:2,type:'line',tension:0.3,pointRadius:0,yAxisID:'y'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:9},maxTicksLimit:16,maxRotation:45},grid:{display:false}},
+        y:{position:'left',ticks:{color:'#7F77DD',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Incident index',color:'#7F77DD',font:{size:10}}},
+        y2:{position:'right',ticks:{color:'#EF9F27',font:{size:10},callback:v=>v+'%'},grid:{display:false},title:{display:true,text:'Reclassified %',color:'#EF9F27',font:{size:10}}}}}});
+
+  dc('reclass');
+  CH.reclass=new Chart(document.getElementById('reclassC'),{type:'doughnut',
+    data:{labels:['Reclassified','Unchanged'],datasets:[{data:[32,68],backgroundColor:['#EF9F27','#EAF3DE'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false}}}});
+
+  document.getElementById('alfred-tb').innerHTML=ALFRED.map(r=>{
+    const changed=r[1]&&r[1]!==r[0];
+    const badge=!r[1]?`<span class="badge b-blue">Pending review</span>`:changed?`<span class="badge b-amber">Reclassified</span>`:`<span class="badge b-green">Confirmed</span>`;
+    return `<tr><td>Tier ${r[0]}</td><td>${r[1]||'—'}</td><td>${fm(+r[2])}</td><td>${r[3]}</td><td>${badge}</td></tr>`;
+  }).join('');
+}
+
+// TYPES
+function renderTypes(){
+  const tot=TYPES.reduce((a,r)=>a+ +r[1],0);
+  document.getElementById('type-mg').innerHTML=TYPES.slice(0,4).map(r=>`<div class="mc"><div class="ml">${fl(r[0])}</div><div class="mv">${fm(+r[1])}</div><div class="ms">${Math.round(+r[1]/tot*100)}% of total</div></div>`).join('');
+  dc('type');
+  const top=TYPES.slice(0,12);
+  CH.type=new Chart(document.getElementById('typeC'),{type:'bar',
+    data:{labels:top.map(r=>fl(r[0])),datasets:[{data:top.map(r=>+r[1]),backgroundColor:TPC.slice(0,top.length),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+  document.getElementById('type-tb').innerHTML=TYPES.map((r,i)=>`<tr><td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${TPC[i]||'#888'};flex-shrink:0"></span>${fl(r[0])}</span></td><td>${fm(+r[1])}</td><td>${fm(+r[2])}</td><td style="color:var(--text2)">${Math.round(+r[2]/+r[1]*100)}%</td></tr>`).join('');
+}
+
+// MARKETS
+function renderMarkets(){
+  document.getElementById('mkt-mg').innerHTML=MARKETS.slice(0,4).map(r=>`<div class="mc"><div class="ml">${r[0]}</div><div class="mv">${fm(+r[1])}</div><div class="ms">Patrol: ${fm(+r[2])} (${Math.round(+r[2]/+r[1]*100)}%)</div></div>`).join('');
+  dc('mkt');
+  const top=MARKETS.slice(0,15);
+  CH.mkt=new Chart(document.getElementById('mktC'),{type:'bar',
+    data:{labels:top.map(r=>r[0]),datasets:[{data:top.map(r=>+r[1]),backgroundColor:MKC,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+  document.getElementById('mkt-tb').innerHTML=MARKETS.map(r=>`<tr><td style="font-weight:500">${r[0]}</td><td>${fm(+r[1])}</td><td>${fm(+r[2])}</td><td style="color:var(--text2)">${Math.round(+r[2]/+r[1]*100)}%</td></tr>`).join('');
+}
+
+// SOURCE
+function renderSource(){
+  const tot=SOURCES.reduce((a,r)=>a+ +r[1],0);
+  document.getElementById('src-mg').innerHTML=SOURCES.slice(0,4).map(r=>`<div class="mc"><div class="ml">${fl(r[0])}</div><div class="mv">${fm(+r[1])}</div><div class="ms">${Math.round(+r[1]/tot*100)}% of total</div></div>`).join('');
+  dc('src');
+  CH.src=new Chart(document.getElementById('srcC'),{type:'bar',
+    data:{labels:SOURCES.slice(0,8).map(r=>fl(r[0])),datasets:[{data:SOURCES.slice(0,8).map(r=>+r[1]),backgroundColor:SOURCES.slice(0,8).map(r=>SC[r[0]]||'#B4B2A9'),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+  document.getElementById('src-tb').innerHTML=SOURCES.map(r=>`<tr><td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${SC[r[0]]||'#B4B2A9'};flex-shrink:0"></span>${fl(r[0])}</span></td><td>${fm(+r[1])}</td><td style="color:var(--text2)">${Math.round(+r[1]/tot*100)}%</td></tr>`).join('');
+}
+
+// ENTRY
+function renderEntry(){
+  const tot=MODES.reduce((a,r)=>a+ +r[1],0);
+  document.getElementById('entry-mg').innerHTML=MODES.slice(0,4).map(r=>`<div class="mc"><div class="ml">${fl(r[0])}</div><div class="mv">${fm(+r[1])}</div><div class="ms">${Math.round(+r[1]/tot*100)}% of known</div></div>`).join('');
+  dc('mode');
+  CH.mode=new Chart(document.getElementById('modeC'),{type:'bar',
+    data:{labels:MODES.map(r=>fl(r[0])),datasets:[{data:MODES.map(r=>+r[1]),backgroundColor:MODES.map(r=>MC[r[0]]||'#B4B2A9'),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fk(v)},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}});
+  document.getElementById('entry-ins').innerHTML=[
+    {l:'Forced entry',v:2802,s:'Top known entry method',c:'#E24B4A'},
+    {l:'Physical breach total',v:3191,s:'Forced entry + break-in variants',c:'#D85A30'},
+    {l:'Digital / remote access',v:1368,s:'Buyer app, phone, SMS',c:'#378ADD'},
+    {l:'Unknown entry mode',v:3984,s:'Largest category — data gap',c:'#B4B2A9'}
+  ].map(i=>`<div class="insight" style="border-left-color:${i.c}"><p style="font-size:12px;color:var(--text2);margin-bottom:2px">${i.l}</p><p style="font-size:20px;font-weight:500">${fm(i.v)}</p><p style="font-size:11px;color:var(--text3);margin-top:2px">${i.s}</p></div>`).join('');
+}
+
+// HEATMAP
+function renderHeatmap(){
+  const hm={};HM.forEach(([d,h,c])=>{hm[`${d}-${h}`]=+c;});
+  const hmx=Math.max(...Object.values(hm));
+  const hmc=v=>{if(!v)return'var(--bg2)';const p=v/hmx;return p>.7?'#E24B4A':p>.4?'#EF9F27':p>.15?'#FAC775':'#EAF3DE';};
+  const g=document.getElementById('hmg');g.innerHTML='';
+  g.appendChild(document.createElement('div'));
+  for(let h=0;h<24;h++){const d=document.createElement('div');d.style.cssText='text-align:center;padding-bottom:3px';d.textContent=h;g.appendChild(d);}
+  DN.forEach((day,dow)=>{
+    const dl=document.createElement('div');dl.style.cssText='display:flex;align-items:center;font-size:11px;color:var(--text2)';dl.textContent=day;g.appendChild(dl);
+    for(let h=0;h<24;h++){const c=document.createElement('div');c.style.cssText=`height:26px;border-radius:2px;background:${hmc(hm[`${dow}-${h}`]||0)};cursor:default`;c.title=`${day} ${h}:00 — ${hm[`${dow}-${h}`]||0}`;g.appendChild(c);}
   });
+  const hb=document.getElementById('hr-bars');hb.innerHTML='';
+  const ht=Array.from({length:24},(_,h)=>DN.reduce((_,__,d)=>_+(hm[`${d}-${h}`]||0),0));
+  const hx=Math.max(...ht);
+  ht.forEach((t,h)=>{const p=t/hx;hb.innerHTML+=`<div class="hbar-r"><span class="hbar-l">${h}</span><div class="hbar-t"><div class="hbar-f" style="width:${Math.round(p*100)}%;background:${p>.7?'#E24B4A':p>.4?'#EF9F27':'#B5D4F4'}"></div></div><span class="hbar-v">${fk(t)}</span></div>`;});
+  const db=document.getElementById('day-bars');db.innerHTML='';
+  const dt=DN.map((_,dow)=>Array.from({length:24},(__,h)=>hm[`${dow}-${h}`]||0).reduce((a,b)=>a+b,0));
+  const dx=Math.max(...dt);
+  DN.forEach((d,i)=>{db.innerHTML+=`<div class="hbar-r" style="margin-bottom:8px"><span style="font-size:12px;color:var(--text2);width:28px">${d}</span><div class="hbar-t" style="height:16px"><div class="hbar-f" style="width:${Math.round(dt[i]/dx*100)}%;background:#378ADD"></div></div><span style="font-size:12px;font-weight:500;width:40px;text-align:right">${fk(dt[i])}</span></div>`;});
 }
 
-function calcTotals(year, mode) {
-  var rows = getRows(year, mode).filter(Boolean);
-  var sec  = rows.reduce(function(a,r){return a+(r.securitas||0);},0);
-  var pro  = rows.reduce(function(a,r){return a+(r.protos||0);},0);
-  var e2e  = rows.reduce(function(a,r){return a+(r.end2end||0);},0);
-  var proj = rows.reduce(function(a,r){return a+(r.projection||0);},0);
-  var inc  = rows.reduce(function(a,r){return a+(r.incidents||0);},0);
-  var ir   = rows.length ? (rows.reduce(function(a,r){return a+(r.incRate||0);},0)/rows.length).toFixed(2) : "0.00";
-  return { sec:sec, pro:pro, e2e:e2e, proj:proj, tot:sec+pro+e2e, inc:inc, ir:ir, rows:rows };
+// EXPORT
+function exportCSV(){
+  const ft=gFT();
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(['month,total,patrol',...ft.map(r=>r.join(','))].join('\n'));
+  a.download='opendoor_incidents.csv';a.click();
 }
 
-function fmt(n)  { return "$" + Math.round(n||0).toLocaleString(); }
-function fmtK(n) { return "$" + ((n||0)/1000).toFixed(1) + "k"; }
-function getYears() { return Array.from(new Set(data.map(function(d){return d.year;}))).sort(); }
-
-function renderAll() { renderYearTabs(); renderNote(); renderMetrics(); renderViewTabs(); renderView(); }
-
-function renderYearTabs() {
-  var years = getYears();
-  if (years.indexOf(activeYear) < 0) activeYear = years[years.length-1] || 2025;
-  var hasProj = data.some(function(d){return d.year===activeYear && d.isProj;});
-  var html = years.map(function(y){
-    return '<button class="btn'+(y===activeYear?' active':'')+'" onclick="setYear('+y+')">'+y+'</button>';
-  }).join("");
-  if (hasProj) html += '<button class="btn amber'+(activeMode==="proj"?" active":"")+'" onclick="setMode(\'proj\')">2026 Projections</button>';
-  if (activeMode==="proj" && !hasProj) activeMode = "actual";
-  html += '<button class="btn" onclick="addYear()">+ Year</button>';
-  document.getElementById("yearTabs").innerHTML = html;
-}
-
-function renderNote() {
-  var el = document.getElementById("noteArea");
-  if (activeMode === "proj") {
-    el.innerHTML = '<div class="note">Showing <strong>2026 Securitas projections</strong> based on 2025 spend per home \xd7 forecasted inventory. Actual spend shown under 2026 tab.</div>';
-  } else if (activeYear === 2024) {
-    el.innerHTML = '<div class="note">2024 data contains Securitas spend only. Protos and End2End tracking began in 2025.</div>';
-  } else {
-    el.innerHTML = "";
-  }
-}
-
-function renderMetrics() {
-  var t = calcTotals(activeYear, activeMode);
-  var displayTot = activeYear===2024 ? t.sec : t.tot;
-  var cards = [["Total spend", fmtK(displayTot), C.tot], ["Securitas", fmtK(t.sec), C.sec]];
-  if (activeYear >= 2025 && activeMode === "actual") { cards.push(["Protos", fmtK(t.pro), C.pro], ["End2End", fmtK(t.e2e), C.e2e]); }
-  if (activeMode === "proj" && t.proj > 0) cards.push(["Projected total", fmtK(t.proj), C.proj]);
-  cards.push(["Avg inc. rate", t.ir+"%", "var(--text)"], ["Total incidents", t.inc, "var(--text)"]);
-  document.getElementById("metricsRow").innerHTML = cards.map(function(c){
-    return '<div class="metric"><label>'+c[0]+'</label><div class="val" style="color:'+c[2]+'">'+c[1]+'</div></div>';
-  }).join("");
-}
-
-function renderViewTabs() {
-  var views = activeMode==="proj" ? ["projections","table"] : ["overview","spend mix","per home","table"];
-  if (views.indexOf(activeView) < 0) activeView = views[0];
-  document.getElementById("viewTabs").innerHTML = views.map(function(v){
-    return '<button class="btn'+(v===activeView?" active":"")+'" onclick="setView(\''+v+'\')">'+v.charAt(0).toUpperCase()+v.slice(1)+'</button>';
-  }).join("");
-}
-
-function destroyCharts() { Object.keys(charts).forEach(function(k){try{charts[k].destroy();}catch(e){}}); charts={}; }
-
-function renderView() {
-  destroyCharts();
-  var el = document.getElementById("viewContent");
-  var rows = getRows(activeYear, activeMode);
-  var active = rows.map(function(r,i){return{r:r,i:i};}).filter(function(x){return x.r;});
-  var labels = active.map(function(x){return SHORT[x.i];});
-  var t = calcTotals(activeYear, activeMode);
-  var is2024 = activeYear===2024;
-  var isProj = activeMode==="proj";
-
-  if (activeView === "overview") {
-    var datasets = is2024
-      ? [{label:"Securitas", data:active.map(function(x){return x.r.securitas||0;}), backgroundColor:C.sec}]
-      : [
-          {label:"Securitas", data:active.map(function(x){return x.r.securitas||0;}), backgroundColor:C.sec},
-          {label:"Protos",    data:active.map(function(x){return x.r.protos||0;}),    backgroundColor:C.pro},
-          {label:"End2End",   data:active.map(function(x){return x.r.end2end||0;}),   backgroundColor:C.e2e}
-        ];
-    var legHtml = is2024
-      ? '<span><i style="background:'+C.sec+'"></i>Securitas</span>'
-      : '<span><i style="background:'+C.sec+'"></i>Securitas</span><span><i style="background:'+C.pro+'"></i>Protos</span><span><i style="background:'+C.e2e+'"></i>End2End</span>';
-    el.innerHTML =
-      '<div class="card"><h2>Monthly spend by vendor</h2><div class="legend">'+legHtml+'</div><div class="chart-wrap"><canvas id="cBar"></canvas></div></div>'+
-      '<div class="card"><h2>Incident rate trend (%)</h2><div class="chart-wrap" style="height:180px"><canvas id="cIr"></canvas></div></div>';
-    setTimeout(function(){
-      charts.bar = new Chart(document.getElementById("cBar"),{type:"bar",data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false,maxRotation:45}}}}});
-      if (active.some(function(x){return x.r.incRate>0;})) {
-        charts.ir = new Chart(document.getElementById("cIr"),{type:"line",data:{labels:labels,datasets:[{label:"Inc. Rate",data:active.map(function(x){return x.r.incRate||0;}),borderColor:C.e2e,backgroundColor:"transparent",tension:0.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+"%";}}}}}});
-      } else {
-        document.getElementById("cIr").parentElement.innerHTML = '<p style="color:var(--text3);font-size:13px;padding:20px 0">No incident rate data for 2024.</p>';
-      }
-    }, 0);
-
-  } else if (activeView === "spend mix") {
-    var tot1 = t.tot || 1;
-    var bars = is2024
-      ? [["Securitas", t.sec, C.sec]]
-      : [["Securitas", t.sec, C.sec], ["Protos", t.pro, C.pro], ["End2End", t.e2e, C.e2e]];
-    var barsHtml = bars.map(function(b){
-      var p = Math.round(b[1]/tot1*100);
-      return '<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>'+b[0]+'</span><span style="color:var(--text2)">'+fmt(b[1])+' <span style="color:'+b[2]+';font-weight:500">('+p+'%)</span></span></div><div style="height:8px;border-radius:4px;background:var(--surface2);overflow:hidden"><div style="height:100%;width:'+p+'%;background:'+b[2]+';border-radius:4px"></div></div></div>';
-    }).join("");
-    el.innerHTML =
-      '<div class="card"><h2>Vendor spend breakdown</h2>'+barsHtml+'</div>'+
-      '<div class="card"><h2>Total monthly spend</h2><div class="chart-wrap"><canvas id="cTot"></canvas></div></div>';
-    setTimeout(function(){
-      charts.tot = new Chart(document.getElementById("cTot"),{type:"line",data:{labels:labels,datasets:[{label:"Total",data:active.map(function(x){return(x.r.securitas||0)+(x.r.protos||0)+(x.r.end2end||0);}),borderColor:C.tot,backgroundColor:"transparent",tension:0.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return"$"+(v/1000).toFixed(0)+"k";}}}}}});
-    }, 0);
-
-  } else if (activeView === "per home") {
-    var sph = active.map(function(x){return x.r.homes>0?parseFloat((x.r.securitas/x.r.homes).toFixed(2)):0;});
-    var sphCards = active.map(function(x,idx){
-      return '<div style="background:var(--surface2);border-radius:6px;padding:10px 12px"><div style="font-size:11px;color:var(--text2)">'+SHORT[x.i]+'</div><div style="font-size:15px;font-weight:500">$'+sph[idx]+'</div><div style="font-size:11px;color:var(--text3)">'+(x.r.homes||0).toLocaleString()+' homes</div></div>';
-    }).join("");
-    el.innerHTML =
-      '<div class="card"><h2>Securitas spend per home</h2><div class="chart-wrap"><canvas id="cSph"></canvas></div></div>'+
-      '<div class="card" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;padding:12px">'+sphCards+'</div>';
-    setTimeout(function(){
-      charts.sph = new Chart(document.getElementById("cSph"),{type:"line",data:{labels:labels,datasets:[{label:"$/home",data:sph,borderColor:C.sec,backgroundColor:"transparent",tension:0.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return"$"+v.toFixed(2);}}}}}});
-    }, 0);
-
-  } else if (activeView === "projections") {
-    var actual2026 = MONTHS.map(function(m){return data.find(function(d){return d.year===2026&&d.month===m&&!d.isProj;})||null;});
-    var projRows = active.map(function(x){
-      return '<tr><td>'+MONTHS[x.i]+'</td><td>'+(x.r.homes||0).toLocaleString()+'</td><td>'+(x.r.incRate||0)+'%</td><td>'+(x.r.incidents||0)+'</td><td style="color:'+C.sec+'">$'+(x.r.homes>0?(x.r.securitas/x.r.homes).toFixed(2):"-")+'</td><td style="color:'+C.proj+';font-weight:500">'+fmt(x.r.projection)+'</td></tr>';
-    }).join("");
-    el.innerHTML =
-      '<div class="card"><h2>Projected vs actual Securitas spend 2026</h2><div class="chart-wrap" style="height:260px"><canvas id="cProj"></canvas></div></div>'+
-      '<div class="card" style="overflow-x:auto;padding:0"><table><thead><tr><th style="text-align:left">Month</th><th>Homes</th><th>Inc. rate</th><th>Incidents</th><th style="color:'+C.sec+'">2025 sec/home</th><th style="color:'+C.proj+'">2026 projection</th></tr></thead><tbody>'+projRows+'</tbody><tfoot><tr><td colspan="5">Total projected</td><td style="color:'+C.proj+'">'+fmt(t.proj)+'</td></tr></tfoot></table></div>';
-    setTimeout(function(){
-      charts.proj = new Chart(document.getElementById("cProj"),{
-        type:"bar",
-        data:{labels:labels,datasets:[
-          {label:"2026 Projection",data:active.map(function(x){return x.r.projection||0;}),backgroundColor:C.proj+"99"},
-          {label:"2026 Actual",    data:active.map(function(x){var a=actual2026[x.i];return a?a.securitas:null;}),backgroundColor:C.sec}
-        ]},
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{x:{ticks:{autoSkip:false,maxRotation:45}},y:{ticks:{callback:function(v){return"$"+(v/1000).toFixed(0)+"k";}}}}}
-      });
-    }, 0);
-
-  } else if (activeView === "table") {
-    var colHead = isProj
-      ? '<th style="text-align:left">Month</th><th>Homes</th><th>Inc. rate</th><th>Incidents</th><th style="color:'+C.sec+'">2025 sec/home basis</th><th style="color:'+C.proj+'">2026 projection</th><th></th>'
-      : '<th style="text-align:left">Month</th><th>Inc. rate</th><th>Incidents</th><th>Homes</th><th style="color:'+C.sec+'">Securitas</th>'+(is2024?'':'<th style="color:'+C.pro+'">Protos</th><th style="color:'+C.e2e+'">End2End</th>')+'<th>Total</th><th></th>';
-    var bodyRows = active.map(function(x){
-      var r=x.r, i=x.i;
-      var key = r.year+"_"+r.month+"_"+(r.isProj?"proj":"actual");
-      var editBtn = '<div class="row-actions"><button onclick="openEditForm(\''+key+'\')">&#9998;</button></div>';
-      if (isProj) {
-        return '<tr><td>'+MONTHS[i]+'</td><td>'+(r.homes||0).toLocaleString()+'</td><td>'+(r.incRate||0)+'%</td><td>'+(r.incidents||0)+'</td><td style="color:'+C.sec+'">$'+(r.homes>0?(r.securitas/r.homes).toFixed(2):"-")+'</td><td style="color:'+C.proj+';font-weight:500">'+fmt(r.projection)+'</td><td>'+editBtn+'</td></tr>';
-      }
-      var tot = (r.securitas||0)+(r.protos||0)+(r.end2end||0);
-      return '<tr><td>'+MONTHS[i]+'</td><td>'+(r.incRate||0)+'%</td><td>'+(r.incidents||0)+'</td><td>'+(r.homes||0).toLocaleString()+'</td><td style="color:'+C.sec+'">'+fmt(r.securitas)+'</td>'+(is2024?'':'<td style="color:'+C.pro+'">'+fmt(r.protos)+'</td><td style="color:'+C.e2e+'">'+fmt(r.end2end)+'</td>')+'<td style="font-weight:500">'+fmt(tot)+'</td><td>'+editBtn+'</td></tr>';
-    }).join("");
-    var footCols = isProj
-      ? '<td colspan="5">Total</td><td style="color:'+C.proj+'">'+fmt(t.proj)+'</td><td></td>'
-      : '<td colspan="4">Total</td><td style="color:'+C.sec+'">'+fmt(t.sec)+'</td>'+(is2024?'':'<td style="color:'+C.pro+'">'+fmt(t.pro)+'</td><td style="color:'+C.e2e+'">'+fmt(t.e2e)+'</td>')+'<td style="color:'+C.tot+'">'+fmt(is2024?t.sec:t.tot)+'</td><td></td>';
-    el.innerHTML = '<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table><thead><tr>'+colHead+'</tr></thead><tbody>'+bodyRows+'</tbody><tfoot><tr>'+footCols+'</tr></tfoot></table></div></div>';
-  }
-}
-
-function setYear(y)  { activeYear=y; activeMode="actual"; renderAll(); }
-function setMode(m)  { activeMode=m; renderAll(); }
-function setView(v)  { activeView=v; renderView(); renderViewTabs(); }
-function addYear()   { var y=parseInt(prompt("Enter year (e.g. 2027):")); if(!y||isNaN(y))return; activeYear=y; activeMode="actual"; renderAll(); }
-
-function openAddForm() {
-  editingKey=null;
-  document.getElementById("formTitle").textContent="Add entry";
-  document.getElementById("deleteBtn").style.display="none";
-  document.getElementById("fYear").value=activeYear;
-  document.getElementById("fIsProj").checked=activeMode==="proj";
-  ["fIncRate","fIncidents","fHomes","fSecuritas","fProtos","fEnd2End","fProjection"].forEach(function(id){document.getElementById(id).value="";});
-  document.getElementById("fMonth").selectedIndex=0;
-  document.getElementById("formOverlay").classList.add("open");
-}
-
-function openEditForm(key) {
-  var parts = key.split("_");
-  var yr=parseInt(parts[0]), mn=parts[1], isProj=parts[2]==="proj";
-  var entry = data.find(function(d){return d.year===yr&&d.month===mn&&!!d.isProj===isProj;});
-  if (!entry) return;
-  editingKey=key;
-  document.getElementById("formTitle").textContent="Edit entry";
-  document.getElementById("deleteBtn").style.display="";
-  document.getElementById("fYear").value=entry.year;
-  document.getElementById("fMonth").value=entry.month;
-  document.getElementById("fIncRate").value=entry.incRate||"";
-  document.getElementById("fIncidents").value=entry.incidents||"";
-  document.getElementById("fHomes").value=entry.homes||"";
-  document.getElementById("fSecuritas").value=entry.securitas||"";
-  document.getElementById("fProtos").value=entry.protos||"";
-  document.getElementById("fEnd2End").value=entry.end2end||"";
-  document.getElementById("fProjection").value=entry.projection||"";
-  document.getElementById("fIsProj").checked=!!entry.isProj;
-  document.getElementById("formOverlay").classList.add("open");
-}
-
-function saveEntry() {
-  var year=parseInt(document.getElementById("fYear").value);
-  var month=document.getElementById("fMonth").value;
-  var isProj=document.getElementById("fIsProj").checked;
-  var entry={
-    year:year, month:month, isProj:isProj,
-    incRate:parseFloat(document.getElementById("fIncRate").value)||0,
-    incidents:parseInt(document.getElementById("fIncidents").value)||0,
-    homes:parseInt(document.getElementById("fHomes").value)||0,
-    securitas:parseFloat(document.getElementById("fSecuritas").value)||0,
-    protos:parseFloat(document.getElementById("fProtos").value)||0,
-    end2end:parseFloat(document.getElementById("fEnd2End").value)||0,
-    projection:parseFloat(document.getElementById("fProjection").value)||0
-  };
-  var idx=data.findIndex(function(d){return d.year===year&&d.month===month&&!!d.isProj===isProj;});
-  if(idx>=0)data[idx]=entry;else data.push(entry);
-  saveData(); activeYear=year; activeMode=isProj?"proj":"actual";
-  closeModal(); renderAll();
-}
-
-function deleteEntry() {
-  if(!editingKey)return;
-  if(!confirm("Delete this entry?"))return;
-  var parts=editingKey.split("_"), yr=parseInt(parts[0]), mn=parts[1], isProj=parts[2]==="proj";
-  data=data.filter(function(d){return!(d.year===yr&&d.month===mn&&!!d.isProj===isProj);});
-  saveData(); closeModal(); renderAll();
-}
-
-function closeModal()  { document.getElementById("formOverlay").classList.remove("open"); }
-function openImport()  { document.getElementById("importText").value=""; document.getElementById("importOverlay").classList.add("open"); }
-function closeImport() { document.getElementById("importOverlay").classList.remove("open"); }
-
-function exportData() {
-  var b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-  var a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="security_spend_data.json"; a.click();
-}
-
-function doImport() {
-  try {
-    var imp=JSON.parse(document.getElementById("importText").value);
-    if(!Array.isArray(imp))throw new Error("Expected array");
-    imp.forEach(function(e){
-      var idx=data.findIndex(function(d){return d.year===e.year&&d.month===e.month&&!!d.isProj===!!e.isProj;});
-      if(idx>=0)data[idx]=e;else data.push(e);
-    });
-    saveData(); closeImport(); renderAll();
-    alert("Imported "+imp.length+" entries.");
-  } catch(e){alert("Invalid JSON: "+e.message);}
-}
-
-document.getElementById("formOverlay").addEventListener("click",function(e){if(e.target===e.currentTarget)closeModal();});
-document.getElementById("importOverlay").addEventListener("click",function(e){if(e.target===e.currentTarget)closeImport();});
-
-loadData();
-renderAll();
+initF();applyF();renderHeatmap();
 </script>
 </body>
 </html>
