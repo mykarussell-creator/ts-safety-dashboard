@@ -3,683 +3,755 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trust & Safety — Incident Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>Trust & Safety Dashboard — Opendoor Incident Reports</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0f1117;--bg2:#1a1d27;--bg3:#242736;--border:#2e3248;
-  --text:#e8eaf6;--text2:#9095b8;--text3:#5a6080;
-  --blue:#4f8ef7;--green:#3ecf8e;--orange:#f59e0b;--red:#f87171;
-  --purple:#a78bfa;--teal:#22d3ee;
-  --card-radius:12px;--gap:16px;
-}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;min-height:100vh}
-.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
-.topbar h1{font-size:17px;font-weight:600;letter-spacing:.3px}
-.topbar .badge{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--text2)}
-.tabs{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:4px}
-.tab{padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text2);border-bottom:2px solid transparent;transition:all .2s}
-.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
-.tab:hover:not(.active){color:var(--text)}
-.page{display:none;padding:20px 24px;gap:var(--gap);flex-direction:column}
-.page.active{display:flex}
-.row{display:flex;gap:var(--gap)}
-.col{flex:1;min-width:0}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--card-radius);padding:18px}
-.card-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap)}
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--card-radius);padding:16px 18px}
-.kpi-label{font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
-.kpi-value{font-size:28px;font-weight:700;line-height:1}
-.kpi-sub{font-size:12px;color:var(--text2);margin-top:5px}
-.kpi-delta{font-size:11px;margin-top:4px;display:inline-block;padding:2px 6px;border-radius:4px}
-.up{color:#f87171;background:rgba(248,113,113,.12)}
-.down{color:#3ecf8e;background:rgba(62,207,142,.12)}
-.neutral{color:var(--text2);background:var(--bg3)}
-canvas{width:100%!important}
-.tbl{width:100%;border-collapse:collapse}
-.tbl th{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);font-weight:600}
-.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text)}
-.tbl tr:last-child td{border-bottom:none}
-.tbl tr:hover td{background:var(--bg3)}
-.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
-.pill-t0{background:rgba(248,113,113,.15);color:#f87171}
-.pill-t1{background:rgba(245,158,11,.15);color:#f59e0b}
-.pill-t2{background:rgba(167,139,250,.15);color:#a78bfa}
-.pill-ok{background:rgba(62,207,142,.15);color:#3ecf8e}
-.pill-warn{background:rgba(245,158,11,.15);color:#f59e0b}
-.pill-bad{background:rgba(248,113,113,.15);color:#f87171}
-.progress-bar{background:var(--bg3);border-radius:4px;height:6px;overflow:hidden;margin-top:4px}
-.progress-fill{height:100%;border-radius:4px}
-.market-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
-.market-item:last-child{border-bottom:none}
-.market-name{min-width:48px;font-size:13px;font-weight:500}
-.market-bar-wrap{flex:1}
-.market-count{min-width:28px;text-align:right;font-size:13px;font-weight:600}
-.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
-.stat-row:last-child{border-bottom:none}
-.stat-label{color:var(--text2);font-size:13px}
-.stat-val{font-weight:600;font-size:13px}
-select,input{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;outline:none}
-.alert-strip{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#f87171;margin-bottom:4px}
-.info-strip{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--blue)}
-.cost-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
-.cost-item:last-child{border-bottom:none}
-.cost-label{font-size:13px;color:var(--text2)}
-.cost-val{font-size:14px;font-weight:600}
-.budget-bar{width:100%;background:var(--bg3);border-radius:4px;height:8px;margin-top:6px;overflow:hidden}
-.budget-fill{height:100%;border-radius:4px}
-.budget-text{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:3px}
-/* tier reference table */
-.tier-ref{width:100%;border-collapse:collapse;margin-top:4px}
-.tier-ref td{padding:6px 10px;border-bottom:1px solid var(--border);font-size:12px}
-.tier-ref tr:last-child td{border-bottom:none}
-.tier-ref td:first-child{font-weight:700;min-width:40px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#ffffff;--bg2:#f5f5f3;--bg3:#efefed;
+    --text:#1a1a18;--text2:#6b6b67;--text3:#9b9b97;
+    --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.2);
+    --radius:8px;--radius-lg:12px;
+    --blue:#378ADD;--red:#E24B4A;--green:#1D9E75;--amber:#EF9F27;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f0efeb;color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+  /* Header */
+  .header{background:var(--bg);border-bottom:0.5px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:100}
+  .logo{font-size:15px;font-weight:600;color:var(--text)}
+  .logo span{color:var(--blue)}
+  .header-sub{font-size:12px;color:var(--text3);border-left:1px solid var(--border);padding-left:16px;margin-left:4px}
+  .header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .live-label{font-size:11px;color:var(--green)}
+  .export-btn{font-size:12px;padding:6px 14px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;transition:.15s}
+  .export-btn:hover{background:var(--bg2)}
+  /* Layout */
+  .main{padding:20px 24px;max-width:1400px;margin:0 auto}
+  /* Filter bar */
+  .filter-bar{display:flex;gap:10px;align-items:center;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:10px 16px;margin-bottom:16px;flex-wrap:wrap}
+  .filter-bar label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+  .filter-bar select{font-size:12px;padding:5px 8px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg2);color:var(--text);height:30px;cursor:pointer}
+  .filter-bar select:focus{outline:none;border-color:var(--blue)}
+  .filter-sep{color:var(--text3);font-size:12px}
+  .filter-count{margin-left:auto;font-size:11px;color:var(--text3)}
+  /* Tabs */
+  .tabs{display:flex;gap:2px;border-bottom:0.5px solid var(--border);margin-bottom:16px}
+  .tab-btn{padding:9px 16px;font-size:13px;font-weight:400;color:var(--text2);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:.1s;margin-bottom:-1px}
+  .tab-btn:hover{color:var(--text)}
+  .tab-btn.active{color:var(--text);font-weight:500;border-bottom-color:var(--text)}
+  /* Metric grid */
+  .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+  .metric-card{background:var(--bg2);border-radius:var(--radius);padding:14px 16px}
+  .metric-label{font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:500}
+  .metric-value{font-size:26px;font-weight:500;color:var(--text);line-height:1}
+  .metric-sub{font-size:11px;color:var(--text3);margin-top:5px}
+  /* Cards */
+  .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:14px}
+  .card-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:12px}
+  .card-grid-2{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:14px;margin-bottom:14px}
+  .card-grid-22{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  .card-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
+  /* Table */
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{color:var(--text2);font-weight:500;text-align:left;padding:5px 8px;border-bottom:0.5px solid var(--border);font-size:11px}
+  td{padding:7px 8px;border-bottom:0.5px solid var(--border);color:var(--text)}
+  tr:last-child td{border-bottom:none}
+  /* Legend */
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:10px;font-size:12px;color:var(--text2)}
+  .legend-item{display:flex;align-items:center;gap:4px}
+  .swatch{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+  /* Map */
+  #map{width:100%;height:440px;border-radius:var(--radius);overflow:hidden}
+  /* State grid */
+  .state-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-top:14px}
+  .state-card{background:var(--bg2);border-radius:var(--radius);padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
+  /* City table container */
+  .city-table-wrap{max-height:320px;overflow-y:auto}
+  /* Bar */
+  .hbar-row{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+  .hbar-label{font-size:10px;color:var(--text3);width:20px;text-align:right}
+  .hbar-track{flex:1;background:var(--bg2);border-radius:3px;height:10px;overflow:hidden}
+  .hbar-fill{height:100%;border-radius:3px}
+  .hbar-val{font-size:10px;color:var(--text2);width:36px;text-align:right}
+  .day-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .day-label{font-size:12px;color:var(--text2);width:28px}
+  /* Heatmap */
+  .hm-grid{display:grid;grid-template-columns:36px repeat(24,1fr);gap:2px;font-size:9px;color:var(--text3)}
+  .hm-cell{height:26px;border-radius:2px;cursor:default}
+  .hm-header{text-align:center;padding-bottom:3px}
+  .hm-day{display:flex;align-items:center;font-size:11px;color:var(--text2)}
+  /* Insight cards */
+  .insight-card{background:var(--bg2);border-radius:var(--radius);padding:12px 14px;border-left:3px solid}
+  .insight-label{font-size:12px;color:var(--text2);margin-bottom:3px}
+  .insight-val{font-size:20px;font-weight:500;color:var(--text)}
+  .insight-sub{font-size:11px;color:var(--text3);margin-top:3px}
+  /* Hidden */
+  .tab-pane{display:none}
+  .tab-pane.active{display:block}
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <h1>🏠 Trust &amp; Safety — Incident Dashboard</h1>
-  <div style="display:flex;align-items:center;gap:10px">
-    <select id="mktFilter" onchange="render()">
-      <option value="all">All Markets</option>
-      <option value="PHX">PHX</option><option value="DFW">DFW</option>
-      <option value="ATL">ATL</option><option value="LAX">LAX</option>
-      <option value="HOU">HOU</option><option value="DET">DET</option>
-      <option value="CMH">CMH</option><option value="CLE">CLE</option>
+<div class="header">
+  <div class="logo">Opendoor <span>Trust &amp; Safety</span></div>
+  <div class="header-sub">DWH.WEB.INCIDENT_REPORTS</div>
+  <div class="header-right">
+    <div class="live-dot"></div>
+    <span class="live-label">Live data</span>
+    <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+    <button class="export-btn" onclick="window.print()">Print</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <label>Date range</label>
+    <select id="startDate" onchange="applyFilters()"></select>
+    <span class="filter-sep">→</span>
+    <select id="endDate" onchange="applyFilters()"></select>
+    <span class="filter-sep" style="margin-left:8px">|</span>
+    <label style="margin-left:8px">Tier</label>
+    <select id="tierFilter" onchange="applyFilters()">
+      <option value="all">All tiers</option>
     </select>
-    <select id="rangeFilter" onchange="render()">
-      <option value="t7">Trailing 7d</option>
-      <option value="t28" selected>Trailing 28d</option>
-      <option value="mtd">MTD</option>
-      <option value="ytd">YTD</option>
+    <label style="margin-left:8px">State</label>
+    <select id="stateFilter" onchange="applyFilters()">
+      <option value="all">All states</option>
     </select>
-    <div class="badge">Updated: <span id="lastUpdated">—</span></div>
-  </div>
-</div>
-
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
-  <div class="tab" onclick="switchTab('investigations',this)">Investigations (T2)</div>
-  <div class="tab" onclick="switchTab('identity',this)">Identity &amp; Access</div>
-  <div class="tab" onclick="switchTab('costs',this)">Costs &amp; Budget</div>
-  <div class="tab" onclick="switchTab('markets',this)">Market Drill-Down</div>
-  <div class="tab" onclick="switchTab('tiers',this)">Tier Reference</div>
-  <div class="tab" onclick="switchTab('hubs',this)">Hub Health</div>
-</div>
-
-<!-- ══ OVERVIEW ══ -->
-<div id="page-overview" class="page active">
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">Overall Incident Rate (T28)</div><div class="kpi-value" id="kpi-rate" style="color:var(--orange)">—</div><div class="kpi-sub">% of inventory</div><span class="kpi-delta" id="kpi-rate-delta"></span></div>
-    <div class="kpi"><div class="kpi-label">T0 Incidents (T28)</div><div class="kpi-value" id="kpi-t0" style="color:var(--red)">—</div><div class="kpi-sub">Squatter interaction / weapon</div><span class="kpi-delta" id="kpi-t0-delta"></span></div>
-    <div class="kpi"><div class="kpi-label">T1 Incidents (T28)</div><div class="kpi-value" id="kpi-t1" style="color:var(--orange)">—</div><div class="kpi-sub">Injury in home</div><span class="kpi-delta" id="kpi-t1-delta"></span></div>
-    <div class="kpi"><div class="kpi-label">T2 Move-Ins (T28)</div><div class="kpi-value" id="kpi-t2" style="color:var(--purple)">—</div><div class="kpi-sub">Rental fraud occupancy</div><span class="kpi-delta" id="kpi-t2-delta"></span></div>
-  </div>
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">Days to Vacate (DTV)</div><div class="kpi-value" id="kpi-dtv" style="color:var(--green)">—</div><div class="kpi-sub">Monthly rolling avg</div><span class="kpi-delta" id="kpi-dtv-delta"></span></div>
-    <div class="kpi"><div class="kpi-label">Deny Access Rate</div><div class="kpi-value" id="kpi-deny" style="color:var(--blue)">—</div><div class="kpi-sub">All decisions (≤5% goal)</div><span class="kpi-delta" id="kpi-deny-delta"></span></div>
-    <div class="kpi"><div class="kpi-label">Hub Online %</div><div class="kpi-value" id="kpi-hub" style="color:var(--teal)">—</div><div class="kpi-sub">SmartRent avg (≥90% goal)</div><span class="kpi-delta" id="kpi-hub-delta"></span></div>
-    <div class="kpi"><div class="kpi-label">Repeat Incident Homes</div><div class="kpi-value" id="kpi-repeat" style="color:var(--orange)">—</div><div class="kpi-sub">3+ incidents</div></div>
-  </div>
-  <div class="row">
-    <div class="col" style="flex:2">
-      <div class="card"><div class="card-title">Incident Rate Trend (T28) — All Tiers</div><canvas id="chart-trend" height="180"></canvas></div>
-    </div>
-    <div class="col">
-      <div class="card"><div class="card-title">Tier Breakdown T0–T8</div><canvas id="chart-tier" height="180"></canvas></div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col"><div class="card"><div class="card-title">Top Markets — T0</div><div id="market-t0-list"></div></div></div>
-    <div class="col"><div class="card"><div class="card-title">Top Markets — T2</div><div id="market-t2-list"></div></div></div>
-    <div class="col"><div class="card"><div class="card-title">Listing Type by Tier</div><canvas id="chart-listing" height="180"></canvas></div></div>
-  </div>
-</div>
-
-<!-- ══ INVESTIGATIONS ══ -->
-<div id="page-investigations" class="page">
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">Active Move-Ins</div><div class="kpi-value" id="inv-active" style="color:var(--purple)">—</div><div class="kpi-sub">Open T2 cases</div></div>
-    <div class="kpi"><div class="kpi-label">Days to Vacate</div><div class="kpi-value" id="inv-dtv" style="color:var(--green)">—</div><div class="kpi-sub">Avg days (goal ≤4)</div></div>
-    <div class="kpi"><div class="kpi-label">NMO Rate</div><div class="kpi-value" id="inv-nmo" style="color:var(--green)">—</div><div class="kpi-sub">Negotiated move-out %</div></div>
-    <div class="kpi"><div class="kpi-label">Open Evictions</div><div class="kpi-value" id="inv-evict" style="color:var(--red)">—</div><div class="kpi-sub">Last resort cases</div></div>
-  </div>
-  <div class="row">
-    <div class="col" style="flex:2"><div class="card"><div class="card-title">DTV Trend — Monthly Rolling Average</div><canvas id="chart-dtv" height="200"></canvas></div></div>
-    <div class="col"><div class="card"><div class="card-title">Resolution Types (YTD)</div><canvas id="chart-resolution" height="200"></canvas></div></div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <div class="card"><div class="card-title">Active Case Log</div>
-        <table class="tbl"><thead><tr><th>Market</th><th>Status</th><th>Days Open</th><th>Resolution Path</th></tr></thead><tbody id="case-log"></tbody></table>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card"><div class="card-title">T2 — Emerging Markets</div><div id="emerging-mkts"></div>
-        <div style="margin-top:14px"><div class="info-strip">Markets with T2 rate &gt;5% of local inventory are flagged. Smaller markets are disproportionately targeted by rental scammers.</div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ IDENTITY ══ -->
-<div id="page-identity" class="page">
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">Overall Deny Access Rate</div><div class="kpi-value" id="id-deny" style="color:var(--blue)">—</div><div class="kpi-sub">Goal: ≤5%</div><span class="kpi-delta" id="id-deny-delta"></span></div>
-    <div class="kpi"><div class="kpi-label">Agent Deny (Total)</div><div class="kpi-value" id="id-agent" style="color:var(--orange)">—</div><div class="kpi-sub">All access decisions</div></div>
-    <div class="kpi"><div class="kpi-label">Agent Deny (Cohort)</div><div class="kpi-value" id="id-cohort" style="color:var(--orange)">—</div><div class="kpi-sub">Agent-only decisions</div></div>
-    <div class="kpi"><div class="kpi-label">Proactively Flagged Ads</div><div class="kpi-value" id="id-ads" style="color:var(--teal)">—</div><div class="kpi-sub">Craigslist / this week</div></div>
-  </div>
-  <div class="row">
-    <div class="col" style="flex:2"><div class="card"><div class="card-title">Deny Access Rate — Weekly Trend</div><canvas id="chart-deny" height="200"></canvas></div></div>
-    <div class="col">
-      <div class="card"><div class="card-title">Top CRA Rules Firing</div>
-        <table class="tbl"><thead><tr><th>Rule</th><th>% Denials</th><th>Status</th></tr></thead><tbody id="cra-rules"></tbody></table>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <div class="card"><div class="card-title">False Positive Rate</div>
-        <div class="stat-row"><span class="stat-label">Alfred FPR (goal ≤5%)</span><span class="stat-val" id="id-fpr">—</span></div>
-        <div class="stat-row"><span class="stat-label">Profiles shifted to less restrictive</span><span class="stat-val" id="id-fpr-count">—</span></div>
-        <div class="stat-row"><span class="stat-label">IDV escalations per visit</span><span class="stat-val" id="id-esc">—</span></div>
-        <canvas id="chart-fpr" height="140"></canvas>
-      </div>
-    </div>
-    <div class="col" style="flex:2"><div class="card"><div class="card-title">Rental Scam Ticket Volume — Weekly</div><canvas id="chart-scam" height="200"></canvas></div></div>
-  </div>
-</div>
-
-<!-- ══ COSTS ══ -->
-<div id="page-costs" class="page">
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">Per-Unit T&amp;S Cost</div><div class="kpi-value" style="color:var(--orange)">$120.97</div><div class="kpi-sub">As of Oct 2025</div><span class="kpi-delta up">Goal: $84.68 (-30%)</span></div>
-    <div class="kpi"><div class="kpi-label">C4K Spend YTD</div><div class="kpi-value" id="cost-c4k" style="color:var(--purple)">—</div><div class="kpi-sub">Annual budget: $175k</div></div>
-    <div class="kpi"><div class="kpi-label">C4K Budget Remaining</div><div class="kpi-value" id="cost-c4k-rem" style="color:var(--green)">—</div><div class="kpi-sub">Of $175k annual</div></div>
-    <div class="kpi"><div class="kpi-label">Avg DIP on Incident Homes</div><div class="kpi-value" style="color:var(--red)">+45%</div><div class="kpi-sub">Longer than clean homes</div></div>
-  </div>
-  <div class="row">
-    <div class="col" style="flex:2"><div class="card"><div class="card-title">C4K Spend vs. Budget — Monthly</div><canvas id="chart-c4k" height="200"></canvas></div></div>
-    <div class="col"><div class="card"><div class="card-title">Vendor Cost Breakdown</div><div id="vendor-costs"></div></div></div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <div class="card"><div class="card-title">Cost Savings Initiatives</div>
-        <table class="tbl"><thead><tr><th>Initiative</th><th>Est. Annual Savings</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>Ekata Pro Insight deprecation</td><td style="color:var(--green)">$21,000</td><td><span class="pill pill-ok">Completed</span></td></tr>
-          <tr><td>Securitas subscription renegotiation</td><td style="color:var(--green)">$70k–$80k/mo</td><td><span class="pill pill-ok">Completed</span></td></tr>
-          <tr><td>Fake camera deployment (92.5% efficacy)</td><td style="color:var(--green)">DIP reduction</td><td><span class="pill pill-ok">Active</span></td></tr>
-          <tr><td>AirTag pilot — appliance recovery</td><td style="color:var(--green)">$1,800+ recovered</td><td><span class="pill pill-warn">Expanding</span></td></tr>
-          <tr><td>FaaS pilot (FirstKey/MainStay)</td><td style="color:var(--teal)">Revenue gen.</td><td><span class="pill pill-warn">In Progress</span></td></tr>
-          <tr><td>Patrol route optimization</td><td style="color:var(--orange)">TBD</td><td><span class="pill pill-warn">Planned</span></td></tr>
-        </tbody></table>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card"><div class="card-title">Per-Unit Cost Reduction Roadmap</div>
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">Current: $120.97/home</span><span style="color:var(--green)">Goal: $84.68/home</span></div>
-          <div class="budget-bar"><div class="budget-fill" style="width:30%;background:var(--orange)"></div></div>
-          <div class="budget-text"><span>$0</span><span>30% reduction target by Apr 2026</span><span>$120.97</span></div>
-        </div>
-        <div class="cost-item"><span class="cost-label">Vendor spend (Securitas/Protos)</span><span class="cost-val">~$37–$250/dispatch</span></div>
-        <div class="cost-item"><span class="cost-label">End2End Solutions</span><span class="cost-val">$75–$350/case</span></div>
-        <div class="cost-item"><span class="cost-label">C4K per move-in (avg)</span><span class="cost-val">~$3k–$7k</span></div>
-        <div class="cost-item"><span class="cost-label">Eviction cost (vs C4K)</span><span class="cost-val">5–10× more than C4K</span></div>
-        <div class="cost-item"><span class="cost-label">DIP delta on incident home</span><span class="cost-val">+54 days avg</span></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MARKETS ══ -->
-<div id="page-markets" class="page">
-  <div class="card"><div class="card-title">Incident Count by Market — T0 + T2 Stacked</div><canvas id="chart-mkt-bar" height="160"></canvas></div>
-  <div class="row">
-    <div class="col">
-      <div class="card"><div class="card-title">Market Risk Table</div>
-        <table class="tbl"><thead><tr><th>Market</th><th>Inventory</th><th>T0</th><th>T2</th><th>Rate</th><th>Listing Mix</th><th>Risk</th></tr></thead><tbody id="mkt-table"></tbody></table>
-      </div>
-    </div>
-    <div class="col" style="max-width:340px">
-      <div class="card"><div class="card-title">Self-Tour vs Traditional — All Tiers</div>
-        <canvas id="chart-self-trad" height="240"></canvas>
-        <div style="margin-top:12px"><div class="info-strip">Self-tour listings show higher rates across all tiers. Markets with T2/inventory &gt;5% moved to 80% traditional.</div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ HUB HEALTH ══ -->
-<div id="page-hubs" class="page">
-
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">Avg Hub Online %</div><div class="kpi-value" id="hub-avg" style="color:var(--teal)">—</div><div class="kpi-sub">Goal: ≥90% (all markets)</div><span class="kpi-delta" id="hub-avg-delta"></span></div>
-    <div class="kpi"><div class="kpi-label">Markets Below 90%</div><div class="kpi-value" id="hub-below" style="color:var(--red)">—</div><div class="kpi-sub">Require immediate follow-up</div></div>
-    <div class="kpi"><div class="kpi-label">Total Hubs Offline &gt;24h</div><div class="kpi-value" id="hub-offline24" style="color:var(--orange)">—</div><div class="kpi-sub">Source: SR Offline Hubs dashboard</div></div>
-    <div class="kpi"><div class="kpi-label">Homes Without Hub</div><div class="kpi-value" id="hub-nohub" style="color:var(--orange)">—</div><div class="kpi-sub">Listed homes, no Knox system</div></div>
+    <span class="filter-count" id="filterCount"></span>
   </div>
 
-  <div class="row">
-    <div class="col" style="flex:2">
-      <div class="card"><div class="card-title">Hub Online % by Market — Current</div><canvas id="chart-hub-market" height="200"></canvas></div>
-    </div>
-    <div class="col">
-      <div class="card"><div class="card-title">Hub Online % Trend (Weekly)</div><canvas id="chart-hub-trend" height="200"></canvas></div>
-    </div>
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="showTab('geo',this)">Geographic view</button>
+    <button class="tab-btn" onclick="showTab('source',this)">Reporter source</button>
+    <button class="tab-btn" onclick="showTab('entry',this)">Mode of entry</button>
+    <button class="tab-btn" onclick="showTab('heatmap',this)">Activity heatmap</button>
+    <button class="tab-btn" onclick="showTab('hubs',this)">SmartRent hubs</button>
   </div>
 
-  <div class="row">
-    <div class="col">
-      <div class="card"><div class="card-title">Market Hub Status Table</div>
-        <table class="tbl">
-          <thead><tr><th>Market</th><th>Hub Online %</th><th>Hubs Online</th><th>Hubs Total</th><th>Offline &gt;24h</th><th>Status</th></tr></thead>
-          <tbody id="hub-mkt-table"></tbody>
-        </table>
-      </div>
+  <!-- OVERVIEW -->
+  <div id="tab-overview" class="tab-pane active">
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-label">Incidents in range</div><div class="metric-value" id="ov-total">—</div><div class="metric-sub" id="ov-range">—</div></div>
+      <div class="metric-card"><div class="metric-label">Patrol dispatched</div><div class="metric-value" id="ov-patrol">—</div><div class="metric-sub" id="ov-patrol-pct">—</div></div>
+      <div class="metric-card"><div class="metric-label">Reclassified</div><div class="metric-value">3,125</div><div class="metric-sub">Marked not_incident (all time)</div></div>
+      <div class="metric-card"><div class="metric-label">Est. cost in range</div><div class="metric-value" id="ov-cost">—</div><div class="metric-sub">Across geo-matched incidents</div></div>
     </div>
-    <div class="col" style="max-width:360px">
-      <div class="card"><div class="card-title">Hub Type Distribution</div>
-        <canvas id="chart-hub-type" height="200"></canvas>
-        <div style="margin-top:14px">
-          <div class="stat-row"><span class="stat-label">SRH / AH hubs (wifi-capable)</span><span class="stat-val" id="hub-srh">—</span></div>
-          <div class="stat-row"><span class="stat-label">V1 hubs (antenna, cellular only)</span><span class="stat-val" id="hub-v1">—</span></div>
-          <div class="stat-row"><span class="stat-label">Hubs in storage (undeployed)</span><span class="stat-val" id="hub-storage">—</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col">
-      <div class="card"><div class="card-title">Offline Hub Alerts — Action Required</div>
-        <div id="hub-alerts"></div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card"><div class="card-title">Hub Health Context</div>
-        <div class="stat-row"><span class="stat-label">Hub offline alert threshold</span><span class="stat-val">&lt;90% online</span></div>
-        <div class="stat-row"><span class="stat-label">Monitoring cadence</span><span class="stat-val">Bi-weekly (Myka)</span></div>
-        <div class="stat-row"><span class="stat-label">Also used by Utilities</span><span class="stat-val">Power-on verification</span></div>
-        <div class="stat-row"><span class="stat-label">Related dashboard</span><span class="stat-val">SR Offline Hubs &gt;24h</span></div>
-        <div class="stat-row"><span class="stat-label">Snowflake schema</span><span class="stat-val">DWH.ADMIRAL.*</span></div>
-        <div class="stat-row"><span class="stat-label">Data source</span><span class="stat-val">SmartRent API → Admiral</span></div>
-        <div style="margin-top:14px"><div class="alert-strip">⚠ V1 hubs (antenna models) cannot auto-update firmware. Manual update via SmartRent serial # required when offline. Affects ~100+ hubs in markets like Tucson and Las Vegas.</div></div>
-        <div style="margin-top:8px"><div class="info-strip">Hub online % directly impacts listing type — hubs that stay offline can force a home to Traditional listing, adding ~$546/acquisition in holding cost impact.</div></div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- ══ TIER REFERENCE ══ -->
-<div id="page-tiers" class="page">
-  <div class="row">
-    <div class="col">
+    <div class="card-grid-2">
       <div class="card">
-        <div class="card-title">Official Incident Tier Definitions (T0–T8)</div>
-        <table class="tier-ref">
-          <tr><td style="color:#f87171">T0</td><td><strong>Squatter Interaction / Injury caused by bad actor / Weapon brandished</strong><br><span style="color:var(--text2);font-size:11px">Highest severity. Triggers immediate investigation, Securitas dispatch, and TOM.</span></td></tr>
-          <tr><td style="color:#f59e0b">T1</td><td><strong>Injury in home</strong><br><span style="color:var(--text2);font-size:11px">Customer, agent, or vendor physically injured on property. Legal/insurance escalation required.</span></td></tr>
-          <tr><td style="color:#a78bfa">T2</td><td><strong>Move-ins / Rental fraud occupancy</strong><br><span style="color:var(--text2);font-size:11px">Victim moves in believing they are renting. Managed via JIRA. Resolution: NMO, C4K, or Eviction.</span></td></tr>
-          <tr><td style="color:#22d3ee">T3</td><td><strong>Drugs / Paraphernalia / Vandalism / Theft / Fire</strong><br><span style="color:var(--text2);font-size:11px">Reported by <em>customer or agent</em>. Higher friction from reporting source vs T4/T5.</span></td></tr>
-          <tr><td style="color:#4f8ef7">T4</td><td><strong>Drugs / Paraphernalia / Vandalism / Theft / Fire / Negative Interaction</strong><br><span style="color:var(--text2);font-size:11px">Reported by <em>OD employee, vendor, or neighbor</em>.</span></td></tr>
-          <tr><td style="color:#3ecf8e">T5</td><td><strong>Drugs / Paraphernalia / Vandalism / Theft / Squatter</strong><br><span style="color:var(--text2);font-size:11px">Reported by <em>Securitas or Law Enforcement</em>. Often from patrol inspections or alarm responses.</span></td></tr>
-          <tr><td style="color:#fb923c">T6</td><td><strong>Items left behind / Trespassing / Tampering</strong><br><span style="color:var(--text2);font-size:11px">Lower severity physical evidence. SLA: 48 hrs to assignment, 48 hrs to done.</span></td></tr>
-          <tr><td style="color:#e879f9">T7</td><td><strong>Fraud</strong><br><span style="color:var(--text2);font-size:11px">Non-occupancy fraud events. SLA: 48 hrs to assignment, 48 hrs to done.</span></td></tr>
-          <tr><td style="color:#94a3b8">T8</td><td><strong>Toilet use / Other</strong><br><span style="color:var(--text2);font-size:11px">Lowest severity. SLA: 48 hrs to assignment, 48 hrs to done.</span></td></tr>
-        </table>
-        <div style="margin-top:16px"><div class="info-strip">Note: T3, T4, and T5 share the same incident typologies — the tier is determined by <strong>who reported it</strong>, not what happened. Source: <em>Incident Tiers</em> internal doc, last updated Feb 2025.</div></div>
+        <div class="card-title">Monthly volume — total vs patrol dispatched</div>
+        <div class="legend">
+          <div class="legend-item"><div class="swatch" style="background:#B5D4F4"></div>Total</div>
+          <div class="legend-item"><div class="swatch" style="background:#E24B4A"></div>Patrol dispatched</div>
+        </div>
+        <div style="position:relative;width:100%;height:220px"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Tier distribution (all time)</div>
+        <div style="position:relative;width:100%;height:160px"><canvas id="tierChart"></canvas></div>
+        <div class="legend" id="tier-legend" style="margin-top:8px"></div>
       </div>
     </div>
-    <div class="col" style="max-width:420px">
-      <div class="card"><div class="card-title">Incident Count by Tier (T28)</div><canvas id="chart-tier-ref" height="320"></canvas></div>
-      <div class="card" style="margin-top:16px"><div class="card-title">SLA Targets by Tier</div>
-        <table class="tbl">
-          <thead><tr><th>Tier(s)</th><th>Time to Assignment</th><th>Time to Done</th></tr></thead>
-          <tbody>
-            <tr><td><span class="pill pill-t0">T0</span></td><td style="color:var(--red)">&lt;1 hour</td><td style="color:var(--red)">&lt;4 hours</td></tr>
-            <tr><td><span class="pill pill-t1">T1</span></td><td>&lt;1 hour</td><td>Same day</td></tr>
-            <tr><td><span class="pill pill-t2">T2</span></td><td>&lt;4 hours</td><td style="color:var(--green)">≤4 days (DTV)</td></tr>
-            <tr><td>T3–T5</td><td>Same day</td><td>48 hours</td></tr>
-            <tr><td>T6–T8</td><td>24 hours</td><td>48 hours</td></tr>
-          </tbody>
+    <div class="card">
+      <div class="card-title">Tier breakdown — count, patrol &amp; estimated cost</div>
+      <table>
+        <thead><tr><th>Tier</th><th>Incidents</th><th>Patrol</th><th>Patrol %</th><th>Est. cost</th></tr></thead>
+        <tbody id="tier-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GEO -->
+  <div id="tab-geo" class="tab-pane">
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-label">Geo-matched incidents</div><div class="metric-value" id="geo-total">—</div><div class="metric-sub">With lat/lng data</div></div>
+      <div class="metric-card"><div class="metric-label">Patrol dispatched</div><div class="metric-value" id="geo-patrol">—</div><div class="metric-sub" id="geo-patrol-pct">—</div></div>
+      <div class="metric-card"><div class="metric-label">Est. cost (geo)</div><div class="metric-value" id="geo-cost">—</div><div class="metric-sub">Filtered incidents</div></div>
+      <div class="metric-card"><div class="metric-label">Top state</div><div class="metric-value" id="geo-state">—</div><div class="metric-sub" id="geo-state-cnt">—</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Incident map — dot size = volume, color = tier</div>
+      <div class="legend" id="map-legend"></div>
+      <div id="map"></div>
+      <p style="font-size:11px;color:var(--text3);margin-top:8px">Click any marker for city details. Use filters above to update the map.</p>
+    </div>
+    <div class="card-grid-22">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Incidents by state</div>
+        <div class="state-grid" id="state-grid"></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Top cities</div>
+        <div class="city-table-wrap">
+          <table>
+            <thead><tr><th>City</th><th>State</th><th>Incidents</th><th>Patrol</th><th>Est. cost</th></tr></thead>
+            <tbody id="city-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOURCE -->
+  <div id="tab-source" class="tab-pane">
+    <div class="metric-grid" id="src-metrics"></div>
+    <div class="card-grid-22">
+      <div class="card">
+        <div class="card-title">Incidents by reporter source</div>
+        <div style="position:relative;width:100%;height:280px"><canvas id="sourceChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">All sources</div>
+        <table><thead><tr><th>Source</th><th>Count</th><th>Share</th></tr></thead><tbody id="src-table"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTRY -->
+  <div id="tab-entry" class="tab-pane">
+    <div class="metric-grid" id="entry-metrics"></div>
+    <div class="card-grid-22">
+      <div class="card">
+        <div class="card-title">Mode of entry</div>
+        <div style="position:relative;width:100%;height:320px"><canvas id="modeChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Physical vs digital breakdown</div>
+        <div id="entry-insights"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SMARTRENT HUBS -->
+  <div id="tab-hubs" class="tab-pane">
+
+    <!-- KPI row -->
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total hubs (active)</div>
+        <div class="metric-value">1,874</div>
+        <div class="metric-sub">Across 30+ markets · DWH.ADMIRAL.HUBS</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Installs (12 wks)</div>
+        <div class="metric-value" style="color:var(--green)">1,874</div>
+        <div class="metric-sub">not_installed → installed state changes</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Uninstalls (12 wks)</div>
+        <div class="metric-value" style="color:var(--red)">1,525</div>
+        <div class="metric-sub">installed → not_installed state changes</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Net installs (12 wks)</div>
+        <div class="metric-value">+349</div>
+        <div class="metric-sub">Installs minus uninstalls</div>
+      </div>
+    </div>
+
+    <!-- Weekly trend + market table -->
+    <div class="card-grid-2">
+      <div class="card">
+        <div class="card-title">Weekly hub installs vs uninstalls — last 12 weeks</div>
+        <div class="legend">
+          <div class="legend-item"><div class="swatch" style="background:#1D9E75"></div>Installs</div>
+          <div class="legend-item"><div class="swatch" style="background:#E24B4A"></div>Uninstalls</div>
+        </div>
+        <div style="position:relative;width:100%;height:220px"><canvas id="hubTrendChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Hub installs by market (12 wks) — top 15</div>
+        <div id="hub-market-bars" style="padding-top:4px"></div>
+      </div>
+    </div>
+
+    <!-- Market breakdown table + offline events -->
+    <div class="card-grid-22">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Hub counts &amp; activity by market</div>
+        <div style="max-height:340px;overflow-y:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Market</th>
+                <th>Total hubs</th>
+                <th>Installs</th>
+                <th>Uninstalls</th>
+                <th>Net</th>
+              </tr>
+            </thead>
+            <tbody id="hub-market-table"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Notable SmartRent event types (last 90 days)</div>
+        <table>
+          <thead><tr><th>Event kind</th><th>Count</th><th>Notes</th></tr></thead>
+          <tbody id="hub-events-table"></tbody>
         </table>
+        <p style="font-size:11px;color:var(--text3);margin-top:10px">Source: DWH.ADMIRAL.SMARTRENT_EVENTS · OCCURRED_AT last 90 days</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HEATMAP -->
+  <div id="tab-heatmap" class="tab-pane">
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-label">Peak day</div><div class="metric-value">Mon–Wed</div><div class="metric-sub">Highest weekly volume</div></div>
+      <div class="metric-card"><div class="metric-label">Peak hours</div><div class="metric-value">4–9 PM</div><div class="metric-sub">Consistent across days</div></div>
+      <div class="metric-card"><div class="metric-label">Quietest time</div><div class="metric-value">4–7 AM</div><div class="metric-sub">Lowest incident rate</div></div>
+      <div class="metric-card"><div class="metric-label">Weekend vs weekday</div><div class="metric-value">–30%</div><div class="metric-sub">Weekend avg vs weekday</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Volume — day of week × hour of day</div>
+      <div class="hm-grid" id="heatmap-grid"></div>
+      <div class="legend" style="margin-top:10px">
+        <div class="legend-item"><div class="swatch" style="background:#EAF3DE"></div>Low</div>
+        <div class="legend-item"><div class="swatch" style="background:#FAC775"></div>Moderate</div>
+        <div class="legend-item"><div class="swatch" style="background:#EF9F27"></div>High</div>
+        <div class="legend-item"><div class="swatch" style="background:#E24B4A"></div>Peak</div>
+      </div>
+    </div>
+    <div class="card-grid-22">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">By hour (all days)</div>
+        <div id="hour-bars"></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">By day (all hours)</div>
+        <div id="day-bars"></div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// ─── DATA ──────────────────────────────────────────────────────────────────
-var TIERS = [
-  {id:'T0',label:'T0 — Squatter Interaction / Weapon',     color:'#f87171'},
-  {id:'T1',label:'T1 — Injury in Home',                    color:'#f59e0b'},
-  {id:'T2',label:'T2 — Move-In (Rental Fraud)',            color:'#a78bfa'},
-  {id:'T3',label:'T3 — Drugs/Vandalism/Theft (Cust/Agent)',color:'#22d3ee'},
-  {id:'T4',label:'T4 — Drugs/Vandalism/Theft (OD/Vendor)', color:'#4f8ef7'},
-  {id:'T5',label:'T5 — Drugs/Vandalism/Squatter (Sec/LE)', color:'#3ecf8e'},
-  {id:'T6',label:'T6 — Items Left / Trespassing / Tampering',color:'#fb923c'},
-  {id:'T7',label:'T7 — Fraud',                            color:'#e879f9'},
-  {id:'T8',label:'T8 — Toilet Use / Other',               color:'#94a3b8'},
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const TREND_RAW=[["2021-05-01","75","24"],["2021-06-01","140","35"],["2021-07-01","161","45"],["2021-08-01","261","65"],["2021-09-01","264","58"],["2021-10-01","365","118"],["2021-11-01","371","80"],["2021-12-01","378","94"],["2022-01-01","414","99"],["2022-02-01","480","100"],["2022-03-01","717","101"],["2022-04-01","597","70"],["2022-05-01","677","98"],["2022-06-01","643","105"],["2022-07-01","1056","136"],["2022-08-01","1099","158"],["2022-09-01","988","160"],["2022-10-01","826","126"],["2022-11-01","687","82"],["2022-12-01","506","97"],["2023-01-01","498","110"],["2023-02-01","384","100"],["2023-03-01","377","88"],["2023-04-01","101","11"]];
+
+const TIERS=[["not_incident","3125","344","131834"],["tier_4","2389","573","34675655"],["tier_6","1779","316","830500"],["tier_5","1592","99","7536393"],["tier_3","1157","294","11162061"],["tier_2","619","141","6767200"],["tier_0","471","186","2322200"],["tier_1","191","48","1104000"],["tier_8","175","32","127500"],["tier_7","117","11","0"]];
+
+const SOURCES=[["agent","3828"],["security_company","3581"],["customer","3333"],["opendoor_employee","2411"],["neighbor","2014"],["hq_tech","1009"],["other","600"],["general_contractor","549"],["cleaning_company","508"],["inspector","257"],["appraiser","171"],["law_enforcement","124"],["alarm","14"]];
+
+const MODES=[["unknown","3494"],["forced_entry","2077"],["unforced_entry","1167"],["no_entry","1007"],["buyer_app","870"],["exterior","73"],["other","71"],["keypad_reentry","54"],["phone_call","40"],["keypad_code","15"],["break_in_damage","10"],["break_in","8"],["sms_message","7"],["lockbox","3"]];
+
+const HM=[["0","0","124"],["0","1","85"],["0","2","38"],["0","3","11"],["0","4","5"],["0","15","110"],["0","16","182"],["0","17","171"],["0","18","199"],["0","19","163"],["0","20","171"],["0","21","160"],["0","22","163"],["0","23","143"],["1","13","90"],["1","14","187"],["1","15","237"],["1","16","334"],["1","17","304"],["1","18","327"],["1","19","269"],["1","20","255"],["1","21","233"],["1","22","208"],["1","23","248"],["2","0","348"],["2","1","124"],["2","2","62"],["2","13","71"],["2","14","143"],["2","15","228"],["2","16","324"],["2","17","345"],["2","18","316"],["2","19","295"],["2","20","268"],["2","21","279"],["2","22","268"],["2","23","186"],["3","0","168"],["3","1","86"],["3","2","49"],["3","12","26"],["3","13","88"],["3","14","130"],["3","15","208"],["3","16","283"],["3","17","270"],["3","18","307"],["3","19","250"],["3","20","253"],["3","21","266"],["3","22","244"],["3","23","218"],["4","0","153"],["4","1","105"],["4","2","51"],["4","12","28"],["4","13","73"],["4","14","130"],["4","15","220"],["4","16","280"],["4","17","283"],["4","18","285"],["4","19","229"],["4","20","251"],["4","21","219"],["4","22","244"],["4","23","204"],["5","0","123"],["5","1","124"],["5","2","38"],["5","13","87"],["5","14","123"],["5","15","240"],["5","16","313"],["5","17","259"],["5","18","242"],["5","19","225"],["5","20","250"],["5","21","193"],["5","22","211"],["5","23","168"],["6","0","125"],["6","1","117"],["6","2","41"],["6","13","27"],["6","14","42"],["6","15","116"],["6","16","183"],["6","17","232"],["6","18","209"],["6","19","165"],["6","20","186"],["6","21","147"],["6","22","163"],["6","23","145"]];
+
+const GEO=[["NV","Henderson","36.06","-115.001","","false","0","2020-01-01"],["GA","Dallas","33.915","-84.928","","true","0","2020-05-01"],["FL","Kissimmee","28.313","-81.356","tier_4","true","0","2021-11-01"],["FL","Kissimmee","28.313","-81.356","tier_1","true","3100000","2021-11-01"],["AZ","Phoenix","33.531","-112.049","","","0","2019-03-01"],["AZ","Glendale","33.532","-112.161","tier_3","false","0","2022-01-01"],["AZ","Glendale","33.532","-112.161","tier_5","false","0","2022-03-01"],["AZ","Tucson","32.308","-110.829","tier_4","true","0","2021-09-01"],["TX","Arlington","32.63","-97.069","","","0","2017-05-01"],["AZ","Peoria","33.743","-112.345","tier_6","true","0","2022-01-01"],["AZ","Peoria","33.743","-112.345","tier_4","false","0","2022-02-01"],["GA","Newnan","33.366","-84.731","tier_5","false","0","2022-10-01"],["NC","Charlotte","35.339","-80.863","","true","0","2020-06-01"],["NV","Henderson","36.026","-114.943","","true","0","2019-09-01"],["CA","Riverbank","37.719","-120.928","tier_4","false","0","2022-04-01"],["TX","Houston","29.646","-95.519","","false","0","2020-06-01"],["TX","Cypress","29.938","-95.632","tier_4","true","0","2021-11-01"],["AZ","Phoenix","33.567","-112.122","tier_6","false","0","2022-06-01"],["AZ","Phoenix","33.567","-112.122","tier_4","true","0","2022-10-01"],["CA","Riverside","33.974","-117.351","tier_3","true","0","2021-12-01"],["TX","Dallas","32.748","-96.837","tier_4","true","0","2022-02-01"],["TX","Humble","30.005","-95.182","not_incident","false","0","2022-03-01"],["TX","Round Rock","30.502","-97.666","tier_6","false","0","2022-06-01"],["TX","Sugar Land","29.664","-95.639","","false","0","2021-05-01"],["AZ","Gilbert","33.367","-111.781","not_incident","false","0","2023-03-01"],["GA","Atlanta","33.665","-84.518","","false","0","2019-10-01"],["AZ","Cave Creek","33.787","-111.991","tier_6","false","0","2022-09-01"],["CA","Cameron Park","38.662","-120.973","tier_3","false","0","2022-01-01"],["CA","Sacramento","38.486","-121.355","not_incident","false","35000","2023-02-01"],["TX","Dallas","32.702","-96.791","tier_4","false","0","2022-11-01"],["TX","Spring","30.06","-95.396","tier_5","false","0","2023-03-01"],["AZ","Tucson","32.232","-110.899","tier_3","true","0","2022-05-01"],["GA","Douglasville","33.711","-84.734","tier_2","false","0","2021-08-01"],["NC","Charlotte","35.241","-80.682","","true","0","2021-05-01"],["TX","Manor","30.366","-97.524","tier_6","false","0","2022-08-01"],["NC","Clayton","35.64","-78.491","","true","0","2019-07-01"],["GA","Stockbridge","33.61","-84.186","tier_4","false","0","2021-11-01"],["TX","Humble","29.988","-95.164","tier_5","false","0","2023-02-01"],["CA","Orangevale","38.688","-121.225","tier_0","true","0","2021-12-01"],["AZ","Gilbert","33.364","-111.822","tier_6","false","0","2022-05-01"],["AZ","Maricopa","33.06","-111.961","tier_6","false","750000","2022-02-01"],["TX","Mansfield","32.574","-97.075","not_incident","true","0","2023-02-01"],["CA","Downey","33.934","-118.108","not_incident","false","0","2022-05-01"],["FL","Tampa","28.014","-82.435","tier_3","false","0","2022-06-01"],["AZ","Surprise","33.647","-112.383","tier_6","false","0","2022-10-01"],["TX","Crosby","29.934","-95.077","tier_4","false","0","2022-07-01"],["GA","Conyers","33.673","-84.063","tier_2","false","0","2021-11-01"],["AZ","Phoenix","33.484","-112.175","tier_7","false","0","2022-01-01"],["CA","Costa Mesa","33.657","-117.91","","false","0","2020-02-01"],["NC","Concord","35.37","-80.582","not_incident","false","0","2023-03-01"],["CA","Placentia","33.9","-117.858","tier_2","true","0","2022-10-01"],["TX","Houston","29.831","-95.409","tier_2","false","2450000","2021-11-01"],["OR","Portland","45.511","-122.5","tier_4","false","0","2021-08-01"],["TX","Pflugerville","30.423","-97.634","tier_4","false","0","2021-10-01"],["TX","Dallas","32.914","-96.709","tier_4","false","0","2022-06-01"],["AZ","Phoenix","33.637","-111.983","tier_6","false","0","2022-08-01"],["OR","Gresham","45.487","-122.458","","true","0","2021-07-01"],["GA","Johns Creek","34.052","-84.213","tier_6","false","0","2022-09-01"],["GA","Atlanta","33.689","-84.563","tier_4","false","0","2021-11-01"],["TX","San Antonio","29.645","-98.429","","true","0","2019-07-01"],["TX","Spring","30.152","-95.503","tier_6","false","0","2023-01-01"],["AZ","Chandler","33.351","-111.88","tier_4","true","1250000","2022-07-01"],["AZ","Glendale","33.643","-112.15","tier_4","false","0","2022-07-01"],["TX","Grand Prairie","32.694","-97.013","tier_4","false","0","2022-08-01"],["AZ","Buckeye","33.396","-112.583","tier_5","false","0","2022-05-01"],["AZ","Peoria","33.732","-112.223","tier_3","false","0","2022-05-01"],["CA","Antelope","38.713","-121.398","tier_4","true","0","2021-12-01"],["CA","Antelope","38.713","-121.398","tier_4","false","7000000","2022-01-01"],["TX","Sugar Land","29.591","-95.695","","true","0","2019-09-01"],["SC","Irmo","34.113","-81.162","tier_8","false","0","2021-12-01"],["TX","Killeen","31.096","-97.782","tier_4","false","5885000","2022-07-01"],["NV","Las Vegas","36.262","-115.268","not_incident","false","0","2022-03-01"],["AZ","Goodyear","33.477","-112.378","tier_3","true","0","2022-02-01"],["NV","Sparks","39.558","-119.717","not_incident","false","0","2022-08-01"],["CA","Rio Linda","38.691","-121.465","tier_3","true","2500000","2022-08-01"],["CA","Rio Linda","38.691","-121.465","tier_4","true","0","2022-08-01"],["CA","Rio Linda","38.691","-121.465","tier_4","false","0","2022-09-01"],["CA","Citrus Heights","38.697","-121.267","tier_5","false","0","2022-01-01"],["AZ","Phoenix","33.608","-112.082","","true","0","2019-12-01"],["AZ","Phoenix","33.608","-112.082","","false","0","2020-02-01"],["OR","Gladstone","45.389","-122.593","tier_6","false","0","2022-06-01"],["CA","San Diego","32.58","-117.096","tier_6","false","0","2022-03-01"],["TX","Aubrey","33.236","-96.969","not_incident","false","0","2022-09-01"],["AZ","Phoenix","33.391","-112.099","tier_4","false","1500000","2022-06-01"],["AZ","Phoenix","33.391","-112.099","tier_4","true","0","2022-07-01"],["AZ","Phoenix","33.391","-112.099","tier_5","false","15550000","2022-07-01"],["AZ","Phoenix","33.391","-112.099","tier_4","false","15750000","2022-08-01"],["AZ","Phoenix","33.391","-112.099","tier_5","true","0","2022-10-01"],["AZ","Phoenix","33.391","-112.099","tier_5","false","0","2022-11-01"],["AZ","Phoenix","33.391","-112.099","tier_5","false","0","2022-12-01"],["TN","Clarksville","36.634","-87.363","not_incident","false","0","2022-03-01"],["GA","Fairburn","33.547","-84.571","tier_4","false","0","2021-12-01"],["TX","Hurst","32.814","-97.186","tier_2","false","0","2022-08-01"],["TX","Dallas","32.784","-96.694","tier_5","false","0","2022-06-01"],["TX","Dallas","32.784","-96.694","tier_4","false","0","2022-07-01"],["TX","Dallas","32.784","-96.694","tier_5","true","0","2022-10-01"],["AL","Birmingham","33.597","-86.683","tier_4","false","0","2022-05-01"],["TX","Argyle","33.073","-97.23","tier_3","false","0","2022-07-01"],["NV","Las Vegas","36.148","-115.147","tier_0","false","0","2023-01-01"],["CA","Sacramento","38.558","-121.51","tier_5","false","0","2021-12-01"],["TX","Dallas","32.751","-96.867","tier_4","false","24900000","2021-11-01"],["CA","Sacramento","38.615","-121.442","tier_3","false","0","2022-05-01"],["TX","Richardson","32.944","-96.716","tier_4","false","0","2021-09-01"],["AZ","Scottsdale","33.481","-111.897","tier_2","false","0","2021-09-01"],["AZ","Phoenix","33.615","-112.13","tier_6","false","0","2022-09-01"],["TX","Katy","29.811","-95.759","not_incident","false","0","2022-11-01"],["FL","Orlando","28.549","-81.297","","true","0","2021-04-01"],["AZ","Glendale","33.612","-112.163","tier_6","true","0","2022-10-01"],["AZ","Glendale","33.612","-112.163","tier_5","false","0","2022-11-01"],["AZ","Glendale","33.612","-112.163","tier_3","true","0","2023-02-01"],["AZ","Glendale","33.612","-112.163","tier_4","false","0","2023-03-01"],["AZ","Glendale","33.612","-112.163","tier_4","false","17500","2023-04-01"],["MO","Florissant","38.782","-90.26","not_incident","false","0","2022-03-01"],["GA","Stone Mountain","33.747","-84.196","tier_2","false","40000000","2021-11-01"],["GA","Stone Mountain","33.747","-84.196","tier_4","true","0","2022-03-01"],["TX","Houston","29.954","-95.437","tier_5","false","50000000","2022-01-01"],["AZ","Surprise","33.624","-112.408","tier_6","false","0","2022-06-01"],["TX","Corpus Christi","27.726","-97.398","tier_4","false","0","2022-05-01"],["CO","Aurora","39.72","-104.809","tier_0","true","0","2022-11-01"],["TX","Houston","29.598","-95.117","tier_6","false","0","2022-10-01"],["GA","Atlanta","33.67","-84.512","tier_4","false","0","2021-08-01"],["AZ","Chandler","33.31","-111.906","tier_6","true","0","2022-05-01"],["TX","Spring","30.064","-95.486","tier_2","false","0","2021-10-01"],["MN","Rosemount","44.75","-93.078","not_incident","false","0","2022-04-01"],["TX","Garland","32.937","-96.618","tier_2","true","0","2021-10-01"],["CA","Fontana","34.047","-117.486","","false","0","2021-07-01"],["TX","Houston","29.954","-95.437","tier_5","false","1750000","2022-01-01"],["TX","Dallas","32.783","-96.694","tier_8","false","0","2022-06-01"],["NV","Las Vegas","36.157","-115.043","tier_4","false","5000000","2022-10-01"],["NV","Las Vegas","36.164","-115.227","tier_4","false","5250000","2022-09-01"],["AZ","Tucson","32.257","-110.959","tier_4","false","4500000","2022-08-01"],["AZ","Tucson","32.257","-110.959","tier_0","true","0","2022-09-01"],["CA","Lancaster","34.692","-118.116","tier_6","false","0","2022-12-01"],["CA","Lancaster","34.692","-118.116","tier_4","false","0","2023-03-01"],["TX","Mesquite","32.778","-96.575","tier_5","false","1750000","2022-08-01"],["CA","Bellflower","33.896","-118.112","tier_2","true","0","2022-01-01"],["NV","Las Vegas","36.194","-115.097","tier_0","false","0","2022-06-01"],["FL","Miami","25.61","-80.358","tier_6","false","0","2022-06-01"],["TX","San Antonio","29.494","-98.388","tier_4","true","0","2022-12-01"],["CO","Aurora","39.689","-104.788","tier_3","true","0","2021-12-01"],["AZ","Phoenix","33.646","-112.034","tier_2","true","0","2021-09-01"],["CA","Sacramento","38.488","-121.34","tier_5","false","0","2022-04-01"],["AZ","Phoenix","33.503","-112.142","tier_4","false","3000000","2022-08-01"],["NV","Henderson","36.025","-115.05","not_incident","false","0","2022-03-01"],["CA","North Highlands","38.702","-121.37","tier_4","false","0","2021-10-01"],["CA","North Highlands","38.702","-121.37","tier_5","false","0","2022-11-01"],["AZ","Phoenix","33.533","-112.14","tier_3","false","0","2022-09-01"],["NV","North Las Vegas","36.215","-115.12","tier_2","true","0","2021-08-01"],["CO","Lakewood","39.735","-105.075","tier_6","true","0","2022-08-01"],["TX","Plano","33.018","-96.797","tier_4","true","0","2021-10-01"],["UT","Salt Lake City","40.734","-111.892","not_incident","false","0","2022-07-01"],["GA","Scottdale","33.797","-84.264","tier_4","false","0","2022-07-01"],["SC","Columbia","34.057","-80.934","tier_5","false","0","2022-04-01"],["TX","Dallas","32.887","-96.875","tier_5","false","0","2022-06-01"],["TN","Nashville","36.114","-86.704","tier_5","false","0","2023-03-01"],["TX","Carrollton","32.991","-96.885","tier_5","false","0","2022-05-01"],["NC","Knightdale","35.783","-78.504","tier_0","true","0","2022-12-01"],["TX","Lancaster","32.553","-96.753","tier_3","false","0","2022-03-01"],["AZ","Glendale","33.68","-112.203","tier_3","false","0","2022-01-01"],["AZ","Gilbert","33.352","-111.756","tier_2","false","4600000","2021-09-01"],["FL","North Port","27.044","-82.213","tier_6","true","0","2022-07-01"],["FL","Saint Petersburg","27.799","-82.658","tier_3","false","0","2022-08-01"],["AZ","Phoenix","33.402","-112.049","tier_3","false","0","2023-03-01"],["AZ","Phoenix","33.469","-112.227","tier_4","true","0","2022-09-01"],["AZ","Phoenix","33.469","-112.227","tier_5","false","0","2022-12-01"],["GA","Snellville","33.827","-84.065","tier_4","true","13000000","2022-03-01"],["MN","Lexington","45.135","-93.165","tier_2","false","0","2022-05-01"],["FL","Edgewater","28.942","-80.897","tier_4","false","0","2022-01-01"],["FL","Lakeland","28.149","-81.927","tier_2","true","0","2022-04-01"],["GA","McDonough","33.447","-84.163","tier_4","false","0","2022-12-01"],["GA","Ellenwood","33.662","-84.234","tier_4","false","0","2023-04-01"],["CA","Azusa","34.116","-117.885","not_incident","false","0","2022-08-01"],["CA","Compton","33.882","-118.225","tier_5","false","22000000","2022-09-01"],["CA","Compton","33.882","-118.225","tier_4","false","0","2022-10-01"],["CA","Compton","33.882","-118.225","tier_5","false","0","2022-11-01"],["CA","Compton","33.882","-118.225","tier_0","false","0","2023-01-01"],["CA","San Manuel","32.61","-110.632","tier_3","false","4500000","2022-02-01"],["CA","Roseville","38.762","-121.364","tier_5","false","0","2022-04-01"],["OR","Hillsboro","45.529","-122.896","tier_6","false","0","2022-07-01"],["TX","Saginaw","32.87","-97.355","not_incident","false","0","2022-07-01"],["CO","Denver","39.773","-105.024","tier_6","true","0","2022-06-01"],["TX","Hutto","30.532","-97.54","tier_6","true","0","2022-03-01"],["GA","Griffin","33.263","-84.268","tier_4","true","0","2022-09-01"],["TN","Murfreesboro","35.821","-86.467","not_incident","false","0","2022-11-01"],["GA","Lawrenceville","33.935","-83.943","not_incident","false","0","2022-05-01"],["FL","Jacksonville","30.28","-81.597","tier_4","false","0","2022-07-01"],["TX","Burleson","32.552","-97.336","","false","0","2021-01-01"],["SC","Rock Hill","34.942","-81.048","","false","0","2020-02-01"],["NC","Charlotte","35.226","-80.83","","false","0","2020-05-01"],["TX","Austin","30.426","-97.69","tier_6","false","0","2022-04-01"],["TX","Austin","30.426","-97.69","tier_5","false","0","2022-12-01"],["FL","Saint Augustine","30.056","-81.5","tier_3","false","0","2021-12-01"],["TX","Fort Worth","32.916","-97.337","not_incident","false","0","2022-05-01"],["SC","York","35.0","-81.229","tier_6","false","0","2021-12-01"],["FL","Tampa","28.039","-82.476","tier_0","true","0","2023-01-01"],["TN","Clarksville","36.519","-87.3","tier_0","false","0","2022-12-01"],["GA","Jonesboro","33.506","-84.373","","false","0","2020-10-01"],["GA","Mableton","33.815","-84.516","","false","0","2020-01-01"],["GA","Alpharetta","34.053","-84.261","not_incident","false","0","2022-04-01"],["GA","Sugar Hill","34.082","-84.041","","false","0","2021-08-01"],["GA","Jonesboro","33.529","-84.3","","","0","2019-06-01"],["FL","Riverview","27.809","-82.341","","true","0","2019-08-01"],["FL","Lakeland","28.1","-81.955","tier_4","false","0","2021-12-01"],["GA","Atlanta","33.575","-84.5","tier_6","false","0","2022-02-01"],["TX","Plano","33.018","-96.797","","false","0","2021-07-01"],["TX","Benbrook","32.678","-97.444","","false","0","2020-08-01"],["FL","Clearwater","28.023","-82.714","","","0","2019-07-01"],["TX","Garland","32.86","-96.615","","false","0","2021-07-01"],["TX","North Richland Hills","32.892","-97.223","","false","0","2020-02-01"],["TX","Arlington","32.688","-97.071","","false","0","2021-07-01"],["TX","Arlington","32.633","-97.066","tier_5","false","0","2022-06-01"],["TX","Arlington","32.633","-97.122","tier_3","false","0","2021-12-01"],["TX","Arlington","32.707","-97.165","","true","0","2020-01-01"],["TX","San Antonio","29.59","-98.478","","false","0","2021-02-01"],["TX","San Antonio","29.347","-98.548","","false","0","2021-01-01"],["AZ","Tucson","32.1","-110.769","","false","0","2020-02-01"],["AZ","Tucson","32.247","-110.782","","true","0","2021-03-01"],["AZ","Phoenix","33.652","-112.048","","true","0","2019-07-01"],["NV","Las Vegas","36.217","-115.271","","false","0","2021-08-01"],["AZ","Phoenix","33.493","-112.097","","false","0","2021-02-01"],["GA","Atlanta","33.8","-84.464","","","0","2019-05-01"],["AZ","Scottsdale","33.481","-111.897","tier_0","false","0","2021-12-01"],["AZ","Phoenix","33.460","-111.979","","true","0","2020-03-01"],["GA","Johns Creek","34.052","-84.213","tier_6","false","0","2022-10-01"],["AZ","Mesa","33.363","-111.66","","","0","2016-07-01"],["AZ","Phoenix","33.607","-112.08","","","0","2016-07-01"],["AZ","Phoenix","33.644","-112.047","","","0","2016-07-01"],["AZ","Phoenix","33.67","-112.023","","","0","2018-01-01"],["AZ","Phoenix","33.667","-112.063","","","0","2017-11-01"],["AZ","Peoria","33.592","-112.214","","","0","2018-04-01"],["AZ","Glendale","33.586","-112.171","","","0","2018-07-01"],["AZ","Gilbert","33.294","-111.704","not_incident","false","0","2022-08-01"],["AZ","Phoenix","33.515","-112.076","tier_4","false","0","2022-03-01"],["AZ","Mesa","33.433","-111.827","","","0","2019-06-01"],["NV","Las Vegas","36.186","-115.19","","","0","2019-05-01"],["GA","Conyers","33.612","-84.028","","","0","2019-02-01"],["TX","Houston","29.78","-95.461","","false","0","2020-01-01"],["AZ","Laveen","33.371","-112.133","","false","0","2019-12-01"],["AZ","San Tan Valley","33.134","-111.559","","","0","2019-03-01"],["CA","Citrus Heights","38.695","-121.276","","","0","2019-02-01"],["AZ","Avondale","33.423","-112.3","","","0","2017-12-01"],["AZ","Avondale","33.465","-112.333","","true","0","2020-02-01"],["NV","Henderson","36.023","-115.008","","","0","2019-02-01"],["NV","North Las Vegas","36.241","-115.193","","","0","2019-03-01"],["TX","Grand Prairie","32.656","-97.05","","","0","2018-01-01"],["TX","Fort Worth","32.742","-97.472","","","0","2018-10-01"],["TX","Arlington","32.674","-97.219","","false","0","2020-01-01"],["TX","Arlington","32.776","-97.072","","","0","2018-01-01"],["NV","Las Vegas","36.292","-115.298","","","0","2019-01-01"],["NV","North Las Vegas","36.251","-115.132","","","0","2019-03-01"],["NV","Henderson","36.058","-114.969","","","0","2019-04-01"],["NV","Las Vegas","36.122","-115.299","","","0","2019-02-01"],["TX","Corpus Christi","27.726","-97.398","","","0","2018-05-01"],["TX","Euless","32.825","-97.089","","false","0","2019-12-01"],["AZ","Scottsdale","33.589","-111.845","","","0","2019-06-01"],["AZ","Maricopa","33.047","-112.06","","","0","2019-05-01"],["AZ","Waddell","33.568","-112.459","","false","0","2019-08-01"],["CA","San Bernardino","34.197","-117.354","","","0","2019-03-01"],["CA","Redlands","34.079","-117.172","","","0","2019-03-01"],["CA","Carmichael","38.65","-121.331","","","0","2019-05-01"],["CA","Sacramento","38.482","-121.485","","","0","2019-01-01"],["AZ","Gilbert","33.342","-111.811","","","0","2018-04-01"],["AZ","Mesa","33.407","-111.637","","","0","2018-08-01"],["AZ","Peoria","33.648","-112.247","","","0","2018-06-01"],["AZ","Surprise","33.721","-112.421","","","0","2017-12-01"],["AZ","Tolleson","33.422","-112.287","","","0","2018-06-01"],["TX","Cedar Hill","32.619","-96.936","","","0","2018-07-01"],["AZ","Mesa","33.381","-111.879","","","0","2019-03-01"],["AZ","Buckeye","33.488","-112.681","","false","0","2019-11-01"],["AZ","Laveen","33.371","-112.133","","true","0","2021-05-01"],["AZ","Surprise","33.598","-112.366","tier_4","false","0","2021-11-01"],["FL","Windermere","28.458","-81.565","","false","0","2019-08-01"],["NC","Charlotte","35.24","-80.647","","","0","2018-06-01"],["GA","Ellenwood","33.645","-84.275","","","0","2019-05-01"],["TX","Seabrook","29.582","-95.06","","","0","2020-01-01"],["GA","Conyers","33.633","-84.03","","false","0","2020-09-01"],["AZ","San Tan Valley","33.232","-111.562","","","0","2018-05-01"],["TX","Coppell","32.961","-96.998","","","0","2019-01-01"],["TX","Fate","32.946","-96.386","","","0","2019-02-01"],["TX","Glenn Heights","32.553","-96.827","","","0","2018-11-01"],["TX","Garland","32.873","-96.656","","","0","2018-12-01"],["TX","Mesquite","32.774","-96.643","","","0","2019-07-01"],["TX","Dallas","32.681","-96.595","","","0","2018-12-01"],["TX","Fort Worth","32.628","-97.408","","","0","2018-11-01"],["TX","Fort Worth","32.84","-97.376","","","0","2018-01-01"],["TX","Sugar Land","29.591","-95.695","","false","0","2019-10-01"],["AL","Birmingham","33.597","-86.683","tier_3","false","1000000","2022-03-01"],["TX","Tomball","30.078","-95.562","not_incident","false","0","2022-08-01"],["GA","Snellville","33.827","-84.065","tier_3","false","1600000","2022-01-01"],["NV","Las Vegas","36.121","-115.227","","","0","2019-03-01"],["CA","Highland","34.124","-117.174","","true","0","2021-03-01"],["AZ","Phoenix","33.295","-111.983","","true","0","2020-11-01"],["TX","La Porte","29.662","-95.065","","false","0","2020-04-01"],["CO","Aurora","39.72","-104.809","tier_5","false","2500000","2022-08-01"],["TX","Carrollton","32.991","-96.885","tier_3","false","1250000","2022-04-01"],["CA","Compton","33.882","-118.225","tier_4","true","0","2022-05-01"],["CA","Compton","33.882","-118.225","tier_5","false","0","2022-04-01"],["GA","McDonough","33.447","-84.163","tier_3","false","0","2022-11-01"],["GA","Atlanta","33.665","-84.518","tier_4","false","0","2021-08-01"],["FL","Jacksonville","30.219","-81.75","","false","0","2019-12-01"],["CO","Denver","39.773","-105.024","not_incident","false","0","2022-07-01"],["CA","Galt","38.285","-121.298","not_incident","false","0","2022-10-01"],["CO","Lakewood","39.735","-105.075","tier_4","false","0","2022-08-01"],["CO","Lakewood","39.735","-105.075","tier_5","false","0","2022-08-01"],["TX","Pflugerville","30.489","-97.567","not_incident","false","0","2022-05-01"],["TX","Mesquite","32.778","-96.575","not_incident","false","0","2022-09-01"],["CA","Bellflower","33.896","-118.112","tier_2","true","0","2022-01-01"],["CA","Colton","34.03","-117.337","not_incident","false","0","2022-05-01"],["CA","Beaumont","33.935","-116.956","not_incident","false","0","2022-11-01"],["TX","Garland","32.886","-96.662","not_incident","false","0","2022-09-01"],["TN","Antioch","36.02","-86.673","","","0","2018-10-01"],["TN","Gallatin","36.371","-86.464","","false","0","2020-01-01"]];
+
+const TIER_COLORS={tier_0:"#E24B4A",tier_1:"#D85A30",tier_2:"#EF9F27",tier_3:"#BA7517",tier_4:"#378ADD",tier_5:"#185FA5",tier_6:"#1D9E75",tier_7:"#0F6E56",tier_8:"#888780",not_incident:"#B4B2A9","":" #D3D1C7"};
+const SOURCE_COLORS={agent:"#378ADD",security_company:"#E24B4A",customer:"#1D9E75",opendoor_employee:"#EF9F27",neighbor:"#7F77DD",hq_tech:"#BA7517",other:"#888780",general_contractor:"#0F6E56"};
+const MODE_COLORS={unknown:"#B4B2A9",forced_entry:"#E24B4A",unforced_entry:"#EF9F27",no_entry:"#639922",buyer_app:"#378ADD",exterior:"#D85A30",other:"#888780",keypad_reentry:"#185FA5",phone_call:"#1D9E75",keypad_code:"#0F6E56",break_in_damage:"#A32D2D",break_in:"#791F1F",sms_message:"#BA7517",lockbox:"#3B6D11"};
+
+const fmtN=n=>Number(n).toLocaleString();
+const fmtK=n=>n>=1000?(n/1000).toFixed(1)+"k":String(Math.round(n));
+const fmtLabel=s=>(s||"").replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+const MONTHS_S=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let charts={};
+let mapInstance=null, markers=[];
+let currentTab='overview';
+
+// ── INIT FILTERS ─────────────────────────────────────────────────────────────
+const allMonths=[...new Set(TREND_RAW.map(r=>r[0]))].sort();
+const minDate=allMonths[0], maxDate=allMonths[allMonths.length-1];
+
+function initFilters(){
+  const sd=document.getElementById('startDate'), ed=document.getElementById('endDate');
+  const tf=document.getElementById('tierFilter'), sf=document.getElementById('stateFilter');
+  allMonths.forEach(m=>{
+    sd.innerHTML+=`<option value="${m}">${m}</option>`;
+    ed.innerHTML+=`<option value="${m}">${m}</option>`;
+  });
+  ed.value=maxDate;
+  const tiers=[...new Set(GEO.map(r=>r[4]).filter(Boolean))].sort();
+  tiers.forEach(t=>tf.innerHTML+=`<option value="${t}">${fmtLabel(t)}</option>`);
+  const states=[...new Set(GEO.map(r=>r[0]).filter(Boolean))].sort();
+  states.forEach(s=>sf.innerHTML+=`<option value="${s}">${s}</option>`);
+}
+
+function getFilters(){
+  return {
+    start:document.getElementById('startDate').value,
+    end:document.getElementById('endDate').value,
+    tier:document.getElementById('tierFilter').value,
+    state:document.getElementById('stateFilter').value
+  };
+}
+
+function getFilteredGeo(){
+  const f=getFilters();
+  return GEO.filter(r=>{
+    const m=r[7];
+    return m>=f.start&&m<=f.end&&
+      (f.tier==='all'||r[4]===f.tier)&&
+      (f.state==='all'||r[0]===f.state);
+  });
+}
+
+function getFilteredTrend(){
+  const f=getFilters();
+  return TREND_RAW.filter(r=>r[0]>=f.start&&r[0]<=f.end);
+}
+
+function applyFilters(){
+  const fg=getFilteredGeo();
+  document.getElementById('filterCount').textContent=`${fmtN(fg.length)} geo-matched incidents`;
+  renderCurrentTab();
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  currentTab=id;
+  renderCurrentTab();
+}
+
+function renderCurrentTab(){
+  if(currentTab==='overview') renderOverview();
+  else if(currentTab==='geo') renderGeo();
+  else if(currentTab==='source') renderSource();
+  else if(currentTab==='entry') renderEntry();
+  else if(currentTab==='heatmap') renderHeatmap();
+  else if(currentTab==='hubs') renderHubs();
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────────
+function renderOverview(){
+  const ft=getFilteredTrend(), fg=getFilteredGeo();
+  const total=ft.reduce((a,r)=>a+ +r[1],0);
+  const patrol=ft.reduce((a,r)=>a+ +r[2],0);
+  const cost=fg.reduce((a,r)=>a+(+r[6]||0),0);
+  const f=getFilters();
+  document.getElementById('ov-total').textContent=fmtN(total);
+  document.getElementById('ov-range').textContent=f.start+' → '+f.end;
+  document.getElementById('ov-patrol').textContent=fmtN(patrol);
+  document.getElementById('ov-patrol-pct').textContent=(total?Math.round(patrol/total*100):0)+'% of incidents';
+  document.getElementById('ov-cost').textContent='$'+fmtK(cost/100);
+
+  // Trend chart
+  destroyChart('trend');
+  const labels=ft.map(r=>{const d=new Date(r[0]);return MONTHS_S[d.getMonth()]+"'"+(d.getFullYear()+"").slice(2);});
+  charts.trend=new Chart(document.getElementById('trendChart'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Total',data:ft.map(r=>+r[1]),backgroundColor:'#B5D4F4',borderRadius:3},
+      {label:'Patrol',data:ft.map(r=>+r[2]),backgroundColor:'#E24B4A',borderRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:9},maxTicksLimit:12,maxRotation:45},grid:{display:false}},
+        y:{ticks:{color:'#888',font:{size:10},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,0.05)'}}}}
+  });
+
+  // Tier donut
+  destroyChart('tier');
+  const real=TIERS.filter(r=>r[0]!=='not_incident');
+  charts.tier=new Chart(document.getElementById('tierChart'),{
+    type:'doughnut',
+    data:{labels:real.map(r=>r[0]),datasets:[{data:real.map(r=>+r[1]),backgroundColor:real.map(r=>TIER_COLORS[r[0]]||'#888'),borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}
+  });
+  document.getElementById('tier-legend').innerHTML=real.map(r=>`<div class="legend-item"><div class="swatch" style="background:${TIER_COLORS[r[0]]||'#888'}"></div>${r[0]} (${fmtN(+r[1])})</div>`).join('');
+
+  // Tier table
+  document.getElementById('tier-table').innerHTML=real.map(r=>`
+    <tr>
+      <td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${TIER_COLORS[r[0]]||'#888'};flex-shrink:0"></span>${r[0]}</span></td>
+      <td>${fmtN(+r[1])}</td><td>${fmtN(+r[2])}</td>
+      <td>${Math.round(+r[2]/+r[1]*100)}%</td>
+      <td style="color:var(--text3)">$${fmtN(Math.round(+r[3]/100))}</td>
+    </tr>`).join('');
+}
+
+// ── GEO ──────────────────────────────────────────────────────────────────────
+function renderGeo(){
+  const fg=getFilteredGeo();
+  const total=fg.length, patrol=fg.filter(r=>r[5]==='true').length;
+  const cost=fg.reduce((a,r)=>a+(+r[6]||0),0);
+  const byState={};fg.forEach(r=>{byState[r[0]]=(byState[r[0]]||0)+1;});
+  const topState=Object.entries(byState).sort((a,b)=>b[1]-a[1])[0]||['—',0];
+
+  document.getElementById('geo-total').textContent=fmtN(total);
+  document.getElementById('geo-patrol').textContent=fmtN(patrol);
+  document.getElementById('geo-patrol-pct').textContent=(total?Math.round(patrol/total*100):0)+'% of geo incidents';
+  document.getElementById('geo-cost').textContent='$'+fmtK(cost/100000)+'k';
+  document.getElementById('geo-state').textContent=topState[0];
+  document.getElementById('geo-state-cnt').textContent=fmtN(topState[1])+' incidents';
+
+  // Map
+  setTimeout(()=>{
+    if(!mapInstance){
+      mapInstance=L.map('map',{zoomControl:true}).setView([36,-98],4);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; CartoDB',maxZoom:18}).addTo(mapInstance);
+    }
+    markers.forEach(m=>m.remove()); markers=[];
+    const clusters={};
+    fg.forEach(r=>{
+      const k=`${r[2]},${r[3]}`;
+      if(!clusters[k]) clusters[k]={lat:+r[2],lng:+r[3],city:r[1],state:r[0],count:0,patrol:0,tier:r[4],cost:0};
+      clusters[k].count++; if(r[5]==='true') clusters[k].patrol++; clusters[k].cost+=(+r[6]||0);
+    });
+    const maxC=Math.max(...Object.values(clusters).map(c=>c.count));
+    Object.values(clusters).forEach(c=>{
+      const rad=Math.max(5,Math.min(22,5+(c.count/maxC)*17));
+      const col=TIER_COLORS[c.tier]||'#888780';
+      const m=L.circleMarker([c.lat,c.lng],{radius:rad,fillColor:col,color:'#fff',weight:1.5,opacity:.9,fillOpacity:.75})
+        .bindPopup(`<b>${c.city}, ${c.state}</b><br><b>${fmtN(c.count)}</b> incidents<br>Patrol dispatched: ${fmtN(c.patrol)}<br>Est. cost: $${fmtN(Math.round(c.cost/100))}<br>Primary tier: ${c.tier||'—'}`)
+        .addTo(mapInstance);
+      markers.push(m);
+    });
+  },100);
+
+  // Map legend
+  document.getElementById('map-legend').innerHTML=Object.entries(TIER_COLORS).filter(([k])=>k&&k.trim()&&k!=='not_incident').slice(0,8).map(([t,c])=>`<div class="legend-item"><div class="swatch" style="background:${c}"></div>${t}</div>`).join('');
+
+  // State grid
+  document.getElementById('state-grid').innerHTML=Object.entries(byState).sort((a,b)=>b[1]-a[1]).slice(0,16).map(([st,cnt])=>`<div class="state-card"><span style="font-size:13px;font-weight:500">${st}</span><span style="font-size:12px;color:var(--text2)">${fmtN(cnt)}</span></div>`).join('');
+
+  // City table
+  const byCity={};
+  fg.forEach(r=>{
+    const k=`${r[1]},${r[0]}`;
+    if(!byCity[k]) byCity[k]={city:r[1],state:r[0],count:0,patrol:0,cost:0};
+    byCity[k].count++; if(r[5]==='true') byCity[k].patrol++; byCity[k].cost+=(+r[6]||0);
+  });
+  const topCities=Object.values(byCity).sort((a,b)=>b.count-a.count).slice(0,25);
+  document.getElementById('city-table').innerHTML=topCities.map(c=>`
+    <tr>
+      <td style="font-weight:500">${c.city}</td><td style="color:var(--text2)">${c.state}</td>
+      <td>${fmtN(c.count)}</td><td>${fmtN(c.patrol)}</td>
+      <td style="color:var(--text3)">$${fmtN(Math.round(c.cost/100))}</td>
+    </tr>`).join('');
+}
+
+// ── SOURCE ────────────────────────────────────────────────────────────────────
+function renderSource(){
+  const total=18399;
+  document.getElementById('src-metrics').innerHTML=SOURCES.slice(0,4).map(r=>`
+    <div class="metric-card"><div class="metric-label">${fmtLabel(r[0])}</div>
+    <div class="metric-value">${fmtN(+r[1])}</div>
+    <div class="metric-sub">${Math.round(+r[1]/total*100)}% of total</div></div>`).join('');
+  destroyChart('source');
+  const top=SOURCES.slice(0,8);
+  charts.source=new Chart(document.getElementById('sourceChart'),{
+    type:'bar',
+    data:{labels:top.map(r=>fmtLabel(r[0])),datasets:[{data:top.map(r=>+r[1]),backgroundColor:top.map(r=>SOURCE_COLORS[r[0]]||'#B4B2A9'),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,0.05)'}},
+        y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}
+  });
+  document.getElementById('src-table').innerHTML=SOURCES.map(r=>`
+    <tr>
+      <td><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:${SOURCE_COLORS[r[0]]||'#B4B2A9'};flex-shrink:0"></span>${fmtLabel(r[0])}</span></td>
+      <td>${fmtN(+r[1])}</td><td style="color:var(--text3)">${Math.round(+r[1]/total*100)}%</td>
+    </tr>`).join('');
+}
+
+// ── ENTRY ─────────────────────────────────────────────────────────────────────
+function renderEntry(){
+  const tot=MODES.reduce((a,r)=>a+ +r[1],0);
+  document.getElementById('entry-metrics').innerHTML=MODES.slice(0,4).map(r=>`
+    <div class="metric-card"><div class="metric-label">${fmtLabel(r[0])}</div>
+    <div class="metric-value">${fmtN(+r[1])}</div>
+    <div class="metric-sub">${Math.round(+r[1]/tot*100)}% of known</div></div>`).join('');
+  destroyChart('mode');
+  const top=MODES.slice(0,10);
+  charts.mode=new Chart(document.getElementById('modeChart'),{
+    type:'bar',
+    data:{labels:top.map(r=>fmtLabel(r[0])),datasets:[{data:top.map(r=>+r[1]),backgroundColor:top.map(r=>MODE_COLORS[r[0]]||'#B4B2A9'),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:10},callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,0.05)'}},
+        y:{ticks:{color:'#555',font:{size:11}},grid:{display:false}}}}
+  });
+  const insights=[{label:'Forced entry',val:2077,sub:'Primary known breach method',color:'#E24B4A'},{label:'Physical breach total',val:2095,sub:'Forced + break-in variants',color:'#D85A30'},{label:'Digital / remote access',val:932,sub:'Buyer app, phone, SMS, keypad',color:'#378ADD'},{label:'Unknown entry mode',val:3494,sub:'Largest single category — data gap',color:'#B4B2A9'}];
+  document.getElementById('entry-insights').innerHTML=insights.map(i=>`
+    <div class="insight-card" style="border-left-color:${i.color};margin-bottom:8px">
+      <div class="insight-label">${i.label}</div>
+      <div class="insight-val">${fmtN(i.val)}</div>
+      <div class="insight-sub">${i.sub}</div>
+    </div>`).join('');
+}
+
+// ── HEATMAP ───────────────────────────────────────────────────────────────────
+function renderHeatmap(){
+  const hmMap={};
+  HM.forEach(([d,h,c])=>{hmMap[`${d}-${h}`]=+c;});
+  const hmMax=Math.max(...Object.values(hmMap));
+  const hmColor=v=>{if(!v) return 'var(--bg2)';const p=v/hmMax;return p>.7?'#E24B4A':p>.4?'#EF9F27':p>.15?'#FAC775':'#EAF3DE';};
+
+  const grid=document.getElementById('heatmap-grid');
+  grid.innerHTML='';
+  // Header
+  const blank=document.createElement('div');grid.appendChild(blank);
+  for(let h=0;h<24;h++){const d=document.createElement('div');d.className='hm-header';d.textContent=h;grid.appendChild(d);}
+  DAYS.forEach((day,dow)=>{
+    const dl=document.createElement('div');dl.className='hm-day';dl.textContent=day;grid.appendChild(dl);
+    for(let h=0;h<24;h++){
+      const v=hmMap[`${dow}-${h}`]||0;
+      const cell=document.createElement('div');cell.className='hm-cell';
+      cell.style.background=hmColor(v);cell.title=`${day} ${h}:00 — ${v} incidents`;grid.appendChild(cell);
+    }
+  });
+
+  // Hour bars
+  const hb=document.getElementById('hour-bars');hb.innerHTML='';
+  const hourTots=Array.from({length:24},(_,h)=>DAYS.reduce((_,__,d)=>_+(hmMap[`${d}-${h}`]||0),0));
+  const hMax=Math.max(...hourTots);
+  hourTots.forEach((tot,h)=>{
+    const fill=tot/hMax;const col=fill>.7?'#E24B4A':fill>.4?'#EF9F27':'#B5D4F4';
+    hb.innerHTML+=`<div class="hbar-row"><span class="hbar-label">${h}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(fill*100)}%;background:${col}"></div></div><span class="hbar-val">${fmtK(tot)}</span></div>`;
+  });
+
+  // Day bars
+  const db=document.getElementById('day-bars');db.innerHTML='';
+  const dayTots=DAYS.map((_,dow)=>Array.from({length:24},(__,h)=>hmMap[`${dow}-${h}`]||0).reduce((a,b)=>a+b,0));
+  const dMax=Math.max(...dayTots);
+  DAYS.forEach((day,i)=>{
+    db.innerHTML+=`<div class="day-row"><span class="day-label">${day}</span><div class="hbar-track" style="height:16px"><div class="hbar-fill" style="width:${Math.round(dayTots[i]/dMax*100)}%;background:#378ADD"></div></div><span class="hbar-val" style="font-weight:500;font-size:12px">${fmtK(dayTots[i])}</span></div>`;
+  });
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function exportCSV(){
+  const fg=getFilteredGeo();
+  const rows=[['state','city','lat','lng','tier','patrol_dispatched','cost_cents','month'],...fg.map(r=>r)];
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='trust_safety_incidents.csv';a.click();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+// ── HUB DATA (live from DWH.ADMIRAL — March 2026) ────────────────────────────
+const HUB_WEEKLY=[
+  ["2025-12-22","14","16"],["2025-12-29","125","88"],["2026-01-05","154","86"],
+  ["2026-01-12","134","113"],["2026-01-19","126","88"],["2026-01-26","119","124"],
+  ["2026-02-02","173","90"],["2026-02-09","181","147"],["2026-02-16","144","126"],
+  ["2026-02-23","149","189"],["2026-03-02","181","140"],["2026-03-09","155","131"],
+  ["2026-03-16","125","115"]
 ];
 
-var D = {
-  rate_t28:3.16,rate_prev:3.8,
-  t0_t28:14,t0_prev:18,
-  t1_t28:1,t1_prev:0,
-  t2_t28:11,t2_prev:15,
-  dtv:4.08,dtv_prev:5.1,
-  deny:8.92,deny_prev:7.84,
-  hub_pct:96.1,hub_prev:94.5,
-  repeat_homes:23,
-  active_movein:11,nmo_rate:83,open_evictions:5,
-  c4k_ytd:110000,c4k_budget:175000,
-  ads_flagged:145,fpr:5.7,id_esc:'0.07%',fpr_count:134,
-  agent_deny:0.79,cohort_deny:4.02,
+const HUB_MARKETS=[
+  ["atl","374","296","154"],["dfw","161","118","67"],["phx","130","96","48"],
+  ["clt","156","89","51"],["hou","114","80","33"],["rdu","81","50","42"],
+  ["tpa","70","48","23"],["den","56","42","32"],["sat","46","40","22"],
+  ["ind","56","39","24"],["gso","55","31","20"],["sac","33","31","20"],
+  ["tus","38","27","14"],["msp","50","27","18"],["chs","33","26","14"],
+  ["jax","44","25","11"],["mia","24","23","5"],["atx","38","22","9"],
+  ["orl","37","22","11"],["kln","27","20","8"],["nas","37","19","16"],
+  ["cmh","31","18","13"],["kci","29","18","13"],["stl","26","17","13"],
+  ["cin","29","17","13"],["bhm","18","14","7"],["las","17","13","7"],
+  ["abq","18","13","10"],["pdx","17","12","4"],["lax","18","12","6"]
+];
 
-  // All 9 tiers T0–T8
-  tier_counts:[14,1,11,42,28,31,19,8,4],
+const HUB_EVENTS=[
+  ["motion","1,117,601","Standard motion detection"],
+  ["motion_stopped","976,840","Motion cleared"],
+  ["attribute_update_locked","217,703","Door lock state change"],
+  ["attribute_update_unlocked","216,490","Door unlock state change"],
+  ["door_window_opened","165,897","Door/window sensor open"],
+  ["manual_unlock","162,524","Physical key or manual unlock"],
+  ["auto_lock","129,181","Auto-lock triggered"],
+  ["jammed_while_locking","86,629","⚠ Lock jam — possible maintenance"],
+  ["code_usage","49,100","Access code used"],
+  ["guest_unlock","49,100","Guest code unlock"],
+  ["offline_with_preceding_motion","16,393","⚠ Hub went offline after motion"],
+  ["remote_unlock","13,417","Remote staff unlock"],
+  ["tamper","11,056","⚠ Device tamper detected"],
+  ["camera_motion","11,020","Ring camera motion event"],
+  ["door_window_left_open","10,072","⚠ Door/window left open"],
+  ["low_battery","3,112","⚠ Low battery warning"],
+  ["exceeded_unlock_attempts","1,080","⚠ Too many failed unlock attempts"]
+];
 
-  trend_labels:['Oct 1','Oct 8','Oct 15','Oct 22','Oct 29','Nov 5','Nov 12','Nov 19','Nov 26','Dec 3','Dec 10','Dec 17','Jan 7','Jan 14','Jan 21','Feb 4','Feb 11','Feb 18','Mar 4','Mar 11','Mar 18'],
-  trend_rate:[4.1,3.9,4.2,3.8,3.5,3.3,3.0,3.2,2.9,2.7,2.5,2.4,2.3,2.2,2.0,2.4,2.8,3.1,3.4,3.2,3.16],
+// ── HUB RENDER ────────────────────────────────────────────────────────────────
+function renderHubs(){
+  // Weekly trend chart
+  destroyChart('hubTrend');
+  const wkLabels=HUB_WEEKLY.map(r=>{const d=new Date(r[0]);return (d.getMonth()+1)+'/'+(d.getDate());});
+  charts.hubTrend=new Chart(document.getElementById('hubTrendChart'),{
+    type:'bar',
+    data:{
+      labels:wkLabels,
+      datasets:[
+        {label:'Installs',data:HUB_WEEKLY.map(r=>+r[1]),backgroundColor:'#1D9E75',borderRadius:3},
+        {label:'Uninstalls',data:HUB_WEEKLY.map(r=>+r[2]),backgroundColor:'#E24B4A',borderRadius:3}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{
+        x:{ticks:{color:'#888',font:{size:9},maxRotation:45},grid:{display:false}},
+        y:{ticks:{color:'#888',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
 
-  dtv_months:['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'],
-  dtv_data:[4.88,6.95,5.72,9.75,6.16,3.4,4.18,4.16,4.08],
+  // Market horizontal bars (top 15 by installs)
+  const top15=HUB_MARKETS.slice(0,15);
+  const maxInstalls=Math.max(...top15.map(r=>+r[2]));
+  document.getElementById('hub-market-bars').innerHTML=top15.map(r=>{
+    const pct=Math.round((+r[2]/maxInstalls)*100);
+    const net=+r[2]- +r[3];
+    const netColor=net>=0?'var(--green)':'var(--red)';
+    return `<div class="hbar-row" style="margin-bottom:5px">
+      <span style="font-size:10px;color:var(--text3);width:28px;text-align:right;text-transform:uppercase">${r[0]}</span>
+      <div class="hbar-track" style="height:12px">
+        <div class="hbar-fill" style="width:${pct}%;background:#378ADD"></div>
+      </div>
+      <span style="font-size:10px;color:var(--text2);width:24px;text-align:right">${r[2]}</span>
+      <span style="font-size:10px;font-weight:500;width:38px;text-align:right;color:${netColor}">${net>=0?'+':''}${net}</span>
+    </div>`;
+  }).join('');
 
-  deny_weeks:['Jan W1','Jan W2','Jan W3','Jan W4','Feb W1','Feb W2','Feb W3','Feb W4','Mar W1','Mar W2'],
-  deny_data:[1.58,1.58,2.21,2.14,7.84,9.42,11.09,8.92,9.68,8.92],
-
-  scam_weeks:['Jan W1','Jan W2','Jan W3','Jan W4','Feb W1','Feb W2','Feb W3','Feb W4','Mar W1'],
-  scam_data:[82,82,51,33,145,96,58,42,145],
-
-  c4k_months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-  c4k_spend:[5000,20000,14700,11200,9100,0,53300,28800,2000,13200,13500,0],
-  c4k_bgt:[14583,14583,14583,14583,14583,14583,14583,14583,14583,14583,14583,14583],
-
-  mkt_t0:{PHX:24,DFW:18,ATL:14,LAX:12,HOU:10,DET:8,CMH:7,CLE:5},
-  mkt_t2:{DFW:26,LAX:21,ATL:14,DET:15,CMH:14,CLE:12,HOU:12,IND:13},
-
-  mkt_table:[
-    {mkt:'PHX',inv:420,t0:24,t2:4,rate:3.2,mix:'80% Trad',risk:'medium'},
-    {mkt:'DFW',inv:380,t0:18,t2:26,rate:4.1,mix:'80% Trad',risk:'high'},
-    {mkt:'ATL',inv:310,t0:14,t2:14,rate:3.8,mix:'70% Trad',risk:'high'},
-    {mkt:'LAX',inv:290,t0:12,t2:21,rate:2.9,mix:'Standard',risk:'high'},
-    {mkt:'HOU',inv:270,t0:10,t2:12,rate:2.6,mix:'Standard',risk:'medium'},
-    {mkt:'DET',inv:130,t0:8,t2:15,rate:4.8,mix:'80% Trad',risk:'high'},
-    {mkt:'CMH',inv:140,t0:7,t2:14,rate:4.6,mix:'80% Trad',risk:'high'},
-    {mkt:'CLE',inv:105,t0:5,t2:12,rate:4.9,mix:'80% Trad',risk:'high'},
-    {mkt:'IND',inv:155,t0:4,t2:13,rate:4.3,mix:'80% Trad',risk:'high'},
-    {mkt:'STL',inv:90,t0:3,t2:11,rate:4.1,mix:'80% Trad',risk:'medium'},
-    {mkt:'RDU',inv:180,t0:3,t2:5,rate:1.9,mix:'Standard',risk:'low'},
-    {mkt:'SAC',inv:200,t0:6,t2:3,rate:2.1,mix:'Standard',risk:'medium'},
-  ],
-
-  emerging:[
-    {mkt:'CVG',t2_rate:'16.85%',note:'New hotspot — monitoring'},
-    {mkt:'KNX',t2_rate:'10.71%',note:'Newly targeted'},
-    {mkt:'CLT',t2_rate:'3.08%',note:'Elevated vs peer markets'},
-    {mkt:'ATL',t2_rate:'4.17%',note:'Persistent — cameras deployed'},
-  ],
-
-  resolution:{NMO:83,C4K:12,Eviction:5},
-
-  cra:[
-    {rule:'Duplicate Phone # (Already Denied)',pct:'52%',status:'active'},
-    {rule:'True IP Routing Type (Proxy/VPN)',pct:'22%',status:'active'},
-    {rule:'Cross-Market Unlocks',pct:'12%',status:'active'},
-    {rule:'Same Market Speed Unlock',pct:'8%',status:'active'},
-    {rule:'Email First Seen < 7 Days',pct:'6%',status:'monitoring'},
-  ],
-
-  vendors:[
-    {name:'Securitas',detail:'37 markets, patrol + alarm','cost':'$37–$50/dispatch'},
-    {name:'Protos',detail:'All markets, dispatch only','cost':'$250/dispatch'},
-    {name:'End2End Solutions',detail:'All markets, rekey/eviction','cost':'$75–$350/case'},
-    {name:'SmartRent hubs',detail:'Hardware + API integration','cost':'$225/hub'},
-    {name:'Wave Electronics',detail:'Ring cameras (discounted)','cost':'Per unit'},
-  ],
-
-  // Hub Health data
-  hub_avg: 96.1, hub_avg_prev: 94.5,
-  hub_below_90: 3,
-  hub_offline_24h: 47,
-  hub_no_hub: 28,
-  hub_srh: 3840,
-  hub_v1: 1820,
-  hub_storage: 5192,
-
-  hub_mkt_data: [
-    {mkt:'PHX', pct:97.2, online:408, total:420, off24:4},
-    {mkt:'DFW', pct:95.8, online:364, total:380, off24:7},
-    {mkt:'ATL', pct:94.1, online:292, total:310, off24:9},
-    {mkt:'LAX', pct:96.5, online:280, total:290, off24:3},
-    {mkt:'HOU', pct:93.3, online:252, total:270, off24:11},
-    {mkt:'DET', pct:88.5, online:115, total:130, off24:8},  // below threshold
-    {mkt:'CMH', pct:91.4, online:128, total:140, off24:5},
-    {mkt:'CLE', pct:87.6, online:92,  total:105, off24:9},  // below threshold
-    {mkt:'IND', pct:92.3, online:143, total:155, off24:6},
-    {mkt:'STL', pct:86.7, online:78,  total:90,  off24:7},  // below threshold
-    {mkt:'RDU', pct:98.3, online:177, total:180, off24:1},
-    {mkt:'SAC', pct:95.0, online:190, total:200, off24:5},
-  ],
-
-  hub_trend_weeks: ['Jan W1','Jan W2','Jan W3','Jan W4','Feb W1','Feb W2','Feb W3','Feb W4','Mar W1','Mar W2'],
-  hub_trend_pct:   [93.2, 92.8, 94.1, 93.6, 94.8, 95.2, 95.8, 96.0, 96.1, 96.1],
-
-  hub_type_labels: ['SRH/AH (WiFi)', 'V1 Antenna (Cellular)', 'In Storage'],
-  hub_type_data:   [3840, 1820, 5192],
-  fpr_data:[4.2,5.1,4.8,5.5,5.7,5.7],
-
-  // Self-tour vs traditional — rates for all 9 tiers
-  self_tour_rates:[0.45,0.06,0.32,0.80,0.50,0.60,0.30,0.18,0.05],
-  traditional_rates:[0.18,0.02,0.09,0.30,0.20,0.25,0.12,0.06,0.02],
-};
-
-document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-
-// ─── CHARTS ────────────────────────────────────────────────────────────────
-var charts={};
-function mkChart(id,cfg){
-  if(charts[id]) charts[id].destroy();
-  var ctx=document.getElementById(id); if(!ctx) return;
-  charts[id]=new Chart(ctx,cfg);
-}
-var gc='rgba(255,255,255,0.05)',ac='#5a6080';
-var bf={family:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',size:11};
-function sc(xl,yl){return{x:{grid:{color:gc},ticks:{color:ac,font:bf},title:{display:!!xl,text:xl,color:ac}},y:{grid:{color:gc},ticks:{color:ac,font:bf},title:{display:!!yl,text:yl,color:ac}}};}
-var tierColors=TIERS.map(t=>t.color);
-var tierIds=TIERS.map(t=>t.id);
-
-function render(){
-  // ── KPIs
-  function kpi(id,v,u){var el=document.getElementById(id);if(el)el.textContent=v+(u||'');}
-  function delta(id,c,p,lb){
-    var el=document.getElementById(id);if(!el)return;
-    var d=+(c-p).toFixed(2),better=lb?d<0:d>0;
-    el.textContent=(d>0?'+':'')+d;
-    el.className='kpi-delta '+(d===0?'neutral':better?'down':'up');
-  }
-  kpi('kpi-rate',D.rate_t28,'%');delta('kpi-rate-delta',D.rate_t28,D.rate_prev,true);
-  kpi('kpi-t0',D.t0_t28,'');delta('kpi-t0-delta',D.t0_t28,D.t0_prev,true);
-  kpi('kpi-t1',D.t1_t28,'');delta('kpi-t1-delta',D.t1_t28,D.t1_prev,true);
-  kpi('kpi-t2',D.t2_t28,'');delta('kpi-t2-delta',D.t2_t28,D.t2_prev,true);
-  kpi('kpi-dtv',D.dtv,' days');delta('kpi-dtv-delta',D.dtv,D.dtv_prev,true);
-  kpi('kpi-deny',D.deny,'%');delta('kpi-deny-delta',D.deny,D.deny_prev,true);
-  kpi('kpi-hub',D.hub_pct,'%');
-  var hd=document.getElementById('kpi-hub-delta');
-  if(hd){hd.textContent=D.hub_pct>=90?'✓ Above threshold':'⚠ Below 90%';hd.className='kpi-delta '+(D.hub_pct>=90?'down':'up');}
-  kpi('kpi-repeat',D.repeat_homes,'');
-  kpi('inv-active',D.active_movein,'');kpi('inv-dtv',D.dtv,' days');kpi('inv-nmo',D.nmo_rate,'%');kpi('inv-evict',D.open_evictions,'');
-  kpi('id-deny',D.deny,'%');
-  var idd=document.getElementById('id-deny-delta');
-  if(idd){idd.textContent=D.deny>5?'⚠ Above 5% goal':'✓ Within goal';idd.className='kpi-delta '+(D.deny>5?'up':'down');}
-  kpi('id-agent',D.agent_deny,'%');kpi('id-cohort',D.cohort_deny,'%');kpi('id-ads',D.ads_flagged,'');
-  kpi('id-fpr',D.fpr+'%');kpi('id-fpr-count',D.fpr_count);kpi('id-esc',D.id_esc);
-  kpi('cost-c4k','$'+Math.round(D.c4k_ytd/1000)+'k','');
-  kpi('cost-c4k-rem','$'+Math.round((D.c4k_budget-D.c4k_ytd)/1000)+'k','');
-
-  // ── Trend
-  mkChart('chart-trend',{type:'line',data:{labels:D.trend_labels,datasets:[
-    {label:'Incident Rate %',data:D.trend_rate,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.08)',tension:.4,fill:true,pointRadius:2,borderWidth:2},
-    {label:'1.5% Target',data:D.trend_labels.map(()=>1.5),borderColor:'rgba(62,207,142,.4)',borderDash:[6,4],pointRadius:0,borderWidth:1.5},
-  ]},options:{responsive:true,plugins:{legend:{labels:{color:ac,font:bf}}},scales:sc('','Incident Rate %')}});
-
-  // ── Tier doughnut T0–T8
-  mkChart('chart-tier',{type:'doughnut',data:{labels:tierIds,datasets:[{data:D.tier_counts,backgroundColor:tierColors,borderWidth:0}]},
-    options:{responsive:true,plugins:{legend:{position:'right',labels:{color:ac,font:bf,padding:8,boxWidth:12}}}}});
-
-  // ── Tier doughnut (Tier Reference tab)
-  mkChart('chart-tier-ref',{type:'bar',data:{
-    labels:TIERS.map(t=>t.id),
-    datasets:[{label:'Incidents (T28)',data:D.tier_counts,backgroundColor:tierColors,borderWidth:0}]
-  },options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gc},ticks:{color:ac,font:bf}},y:{grid:{color:gc},ticks:{color:ac,font:bf}}}}});
-
-  // ── Market T0 bars
-  var t0E=Object.entries(D.mkt_t0).sort((a,b)=>b[1]-a[1]),mx0=Math.max(...t0E.map(e=>e[1]));
-  document.getElementById('market-t0-list').innerHTML=t0E.map(([m,v])=>`<div class="market-item"><span class="market-name">${m}</span><div class="market-bar-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${Math.round(v/mx0*100)}%;background:#f87171"></div></div></div><span class="market-count">${v}</span></div>`).join('');
-
-  // ── Market T2 bars
-  var t2E=Object.entries(D.mkt_t2).sort((a,b)=>b[1]-a[1]),mx2=Math.max(...t2E.map(e=>e[1]));
-  document.getElementById('market-t2-list').innerHTML=t2E.map(([m,v])=>`<div class="market-item"><span class="market-name">${m}</span><div class="market-bar-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${Math.round(v/mx2*100)}%;background:#a78bfa"></div></div></div><span class="market-count">${v}</span></div>`).join('');
-
-  // ── Listing type (T0/T2/T3 grouped)
-  mkChart('chart-listing',{type:'bar',data:{labels:['Standard (Self-Tour)','Traditional'],datasets:[
-    {label:'T0',data:[0.45,0.18],backgroundColor:'rgba(248,113,113,.7)'},
-    {label:'T2',data:[0.32,0.09],backgroundColor:'rgba(167,139,250,.7)'},
-    {label:'T3',data:[0.80,0.30],backgroundColor:'rgba(34,211,238,.7)'},
-    {label:'T5',data:[0.60,0.25],backgroundColor:'rgba(62,207,142,.7)'},
-  ]},options:{responsive:true,plugins:{legend:{labels:{color:ac,font:bf}}},scales:sc('Listing Type','% of inventory')}});
-
-  // ── DTV trend
-  mkChart('chart-dtv',{type:'line',data:{labels:D.dtv_months,datasets:[
-    {label:'Days to Vacate',data:D.dtv_data,borderColor:'#3ecf8e',backgroundColor:'rgba(62,207,142,.08)',tension:.4,fill:true,pointRadius:3,borderWidth:2},
-    {label:'Goal (4 days)',data:D.dtv_months.map(()=>4),borderColor:'rgba(79,142,247,.4)',borderDash:[6,4],pointRadius:0,borderWidth:1.5},
-  ]},options:{responsive:true,plugins:{legend:{labels:{color:ac,font:bf}}},scales:sc('Month','Days')}});
-
-  // ── Resolution donut
-  mkChart('chart-resolution',{type:'doughnut',data:{labels:['NMO (Negotiated)','Cash for Keys','Eviction'],datasets:[{data:[D.resolution.NMO,D.resolution.C4K,D.resolution.Eviction],backgroundColor:['#3ecf8e','#f59e0b','#f87171'],borderWidth:0}]},
-    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:ac,font:bf}}}}});
-
-  // ── Case log
-  var cases=[{mkt:'DFW',status:'Active',days:4,path:'NMO Negotiating'},{mkt:'ATL',status:'Active',days:7,path:'C4K Offered'},{mkt:'LAX',status:'Active',days:12,path:'Eviction Filed'},{mkt:'CMH',status:'Active',days:2,path:'NMO Negotiating'},{mkt:'IND',status:'Active',days:9,path:'C4K Pending'},{mkt:'DET',status:'Pending LE',days:15,path:'Law Enforcement'}];
-  document.getElementById('case-log').innerHTML=cases.map(c=>`<tr><td><strong>${c.mkt}</strong></td><td><span class="pill ${c.status==='Active'?'pill-warn':'pill-t0'}">${c.status}</span></td><td>${c.days}d</td><td style="color:var(--text2)">${c.path}</td></tr>`).join('');
-
-  // ── Emerging markets
-  document.getElementById('emerging-mkts').innerHTML=D.emerging.map(e=>`<div class="market-item"><span class="market-name">${e.mkt}</span><div class="market-bar-wrap"><span style="font-size:12px;color:var(--text2)">${e.note}</span></div><span class="kpi-delta up" style="font-size:12px">${e.t2_rate}</span></div>`).join('');
-
-  // ── Deny trend
-  mkChart('chart-deny',{type:'line',data:{labels:D.deny_weeks,datasets:[
-    {label:'Deny Access Rate %',data:D.deny_data,borderColor:'#4f8ef7',backgroundColor:'rgba(79,142,247,.08)',tension:.4,fill:true,pointRadius:3,borderWidth:2},
-    {label:'5% Goal',data:D.deny_weeks.map(()=>5),borderColor:'rgba(62,207,142,.4)',borderDash:[6,4],pointRadius:0,borderWidth:1.5},
-  ]},options:{responsive:true,plugins:{legend:{labels:{color:ac,font:bf}}},scales:sc('Week','Deny Rate %')}});
-
-  // ── CRA rules
-  document.getElementById('cra-rules').innerHTML=D.cra.map(r=>`<tr><td style="font-size:12px">${r.rule}</td><td><strong>${r.pct}</strong></td><td><span class="pill ${r.status==='active'?'pill-ok':'pill-warn'}">${r.status}</span></td></tr>`).join('');
-
-  // ── FPR bar
-  mkChart('chart-fpr',{type:'bar',data:{labels:D.fpr_months,datasets:[{label:'FPR %',data:D.fpr_data,backgroundColor:'rgba(79,142,247,.6)'}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:sc('','FPR %')}});
-
-  // ── Scam tickets
-  mkChart('chart-scam',{type:'bar',data:{labels:D.scam_weeks,datasets:[{label:'Rental Scam Tickets',data:D.scam_data,backgroundColor:'rgba(167,139,250,.6)'}]},
-    options:{responsive:true,plugins:{legend:{labels:{color:ac,font:bf}}},scales:sc('Week','Ticket Count')}});
-
-  // ── C4K
-  mkChart('chart-c4k',{type:'bar',data:{labels:D.c4k_months,datasets:[
-    {label:'Actual Spend',data:D.c4k_spend,backgroundColor:'rgba(167,139,250,.7)'},
-    {label:'Monthly Budget',data:D.c4k_bgt,type:'line',borderColor:'rgba(62,207,142,.6)',borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false},
-  ]},options:{responsive:true,plugins:{legend:{labels:{color:ac,font:bf}}},scales:sc('Month','USD')}});
-
-  // ── Vendors
-  document.getElementById('vendor-costs').innerHTML=D.vendors.map(v=>`<div class="cost-item"><div><div style="font-size:13px;font-weight:500">${v.name}</div><div style="font-size:11px;color:var(--text3)">${v.detail}</div></div><span style="font-size:12px;color:var(--orange)">${v.cost}</span></div>`).join('');
-
-  // ── Market stacked bar
-  mkChart('chart-mkt-bar',{type:'bar',data:{labels:D.mkt_table.map(r=>r.mkt),datasets:[
-    {label:'T0',data:D.mkt_table.map(r=>r.t0),backgroundColor:'rgba(248,113,113,.7)',stack:'a'},
-    {label:'T2',data:D.mkt_table.map(r=>r.t2),backgroundColor:'rgba(167,139,250,.7)',stack:'a'},
-  ]},options:{responsive:true,plugins:{legend:{labels:{color:ac,font:bf}}},scales:{x:{...sc().x,stacked:true},y:{...sc().y,stacked:true}}}});
-
-  // ── Market table
-  var rm={high:'pill-bad',medium:'pill-warn',low:'pill-ok'};
-  document.getElementById('mkt-table').innerHTML=D.mkt_table.map(r=>`<tr><td><strong>${r.mkt}</strong></td><td>${r.inv}</td><td style="color:#f87171">${r.t0}</td><td style="color:#a78bfa">${r.t2}</td><td>${r.rate}%</td><td style="font-size:12px;color:var(--text2)">${r.mix}</td><td><span class="pill ${rm[r.risk]}">${r.risk}</span></td></tr>`).join('');
-
-  // ── Hub Health
-  kpi('hub-avg', D.hub_avg, '%');
-  var had=document.getElementById('hub-avg-delta');
-  if(had){var hd2=+(D.hub_avg-D.hub_avg_prev).toFixed(1);had.textContent=(hd2>0?'+':'')+hd2+'%';had.className='kpi-delta '+(hd2>=0?'down':'up');}
-  kpi('hub-below', D.hub_below_90, '');
-  kpi('hub-offline24', D.hub_offline_24h, '');
-  kpi('hub-nohub', D.hub_no_hub, '');
-  kpi('hub-srh', D.hub_srh.toLocaleString(), '');
-  kpi('hub-v1', D.hub_v1.toLocaleString(), '');
-  kpi('hub-storage', D.hub_storage.toLocaleString(), '');
-
-  // Hub market bar chart
-  var hubColors = D.hub_mkt_data.map(r=>r.pct>=90?'rgba(62,207,142,.7)':'rgba(248,113,113,.7)');
-  mkChart('chart-hub-market',{type:'bar',data:{
-    labels: D.hub_mkt_data.map(r=>r.mkt),
-    datasets:[
-      {label:'Hub Online %',data:D.hub_mkt_data.map(r=>r.pct),backgroundColor:hubColors},
-    ]
-  },options:{responsive:true,plugins:{legend:{display:false},annotation:{annotations:{line1:{type:'line',yMin:90,yMax:90,borderColor:'rgba(248,113,113,.6)',borderWidth:2,borderDash:[6,4]}}}},scales:{...sc('Market','Online %'),y:{...sc().y,min:80,max:100}}}});
-
-  // Hub trend
-  mkChart('chart-hub-trend',{type:'line',data:{labels:D.hub_trend_weeks,datasets:[
-    {label:'Hub Online %',data:D.hub_trend_pct,borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.08)',tension:.4,fill:true,pointRadius:3,borderWidth:2},
-    {label:'90% Goal',data:D.hub_trend_weeks.map(()=>90),borderColor:'rgba(248,113,113,.5)',borderDash:[6,4],pointRadius:0,borderWidth:1.5},
-  ]},options:{responsive:true,plugins:{legend:{labels:{color:ac,font:bf}}},scales:{...sc('Week','Online %'),y:{...sc().y,min:85,max:100}}}});
-
-  // Hub type donut
-  mkChart('chart-hub-type',{type:'doughnut',data:{labels:D.hub_type_labels,datasets:[{data:D.hub_type_data,backgroundColor:['#22d3ee','#f59e0b','#5a6080'],borderWidth:0}]},
-    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:ac,font:bf}}}}});
-
-  // Hub market table
-  document.getElementById('hub-mkt-table').innerHTML=D.hub_mkt_data.map(r=>{
-    var ok=r.pct>=90;
+  // Market table
+  document.getElementById('hub-market-table').innerHTML=HUB_MARKETS.map(r=>{
+    const net=+r[2]- +r[3];
     return `<tr>
-      <td><strong>${r.mkt}</strong></td>
-      <td style="color:${ok?'#3ecf8e':'#f87171'};font-weight:600">${r.pct}%</td>
-      <td>${r.online}</td><td>${r.total}</td>
-      <td style="color:${r.off24>5?'#f87171':'var(--text2)'}">${r.off24}</td>
-      <td><span class="pill ${ok?'pill-ok':'pill-bad'}">${ok?'OK':'Below 90%'}</span></td>
+      <td style="font-weight:500;text-transform:uppercase;font-size:11px">${r[0]}</td>
+      <td>${fmtN(+r[1])}</td>
+      <td style="color:var(--green)">${fmtN(+r[2])}</td>
+      <td style="color:var(--red)">${fmtN(+r[3])}</td>
+      <td style="font-weight:500;color:${net>=0?'var(--green)':'var(--red)'}">${net>=0?'+':''}${net}</td>
     </tr>`;
   }).join('');
 
-  // Hub alerts
-  var below = D.hub_mkt_data.filter(r=>r.pct<90);
-  if(below.length===0){
-    document.getElementById('hub-alerts').innerHTML='<div class="info-strip">✓ All markets currently above 90% threshold.</div>';
-  } else {
-    document.getElementById('hub-alerts').innerHTML = below.map(r=>`
-      <div class="alert-strip" style="margin-bottom:6px">
-        <strong>${r.mkt}</strong> — ${r.pct}% online (${r.total-r.online} hubs offline, ${r.off24} offline &gt;24h).
-        Action: SmartRent Hub Offline visit required. Check firmware version — V1 hubs may need manual serial # update.
-      </div>`).join('');
-  }
-  mkChart('chart-self-trad',{type:'radar',data:{
-    labels:tierIds,
-    datasets:[
-      {label:'Self-Tour',data:D.self_tour_rates,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.1)',borderWidth:2,pointRadius:3},
-      {label:'Traditional',data:D.traditional_rates,borderColor:'#3ecf8e',backgroundColor:'rgba(62,207,142,.1)',borderWidth:2,pointRadius:3},
-    ]
-  },options:{responsive:true,plugins:{legend:{labels:{color:ac,font:bf}}},scales:{r:{grid:{color:gc},ticks:{color:ac,backdropColor:'transparent',font:{size:9}},pointLabels:{color:ac,font:{size:10}}}}}});
+  // Events table
+  const alertKinds=['jammed_while_locking','offline_with_preceding_motion','tamper','door_window_left_open','low_battery','exceeded_unlock_attempts'];
+  document.getElementById('hub-events-table').innerHTML=HUB_EVENTS.map(r=>{
+    const isAlert=alertKinds.some(k=>r[0].includes(k.split('_')[0])||r[2].includes('⚠'));
+    return `<tr>
+      <td style="font-size:11px;color:${isAlert?'var(--red)':'var(--text)'}">${r[0]}</td>
+      <td style="font-weight:500">${r[1]}</td>
+      <td style="font-size:11px;color:var(--text3)">${r[2]}</td>
+    </tr>`;
+  }).join('');
 }
 
-function switchTab(name,el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('page-'+name).classList.add('active');
-  setTimeout(render,50);
-}
-
-render();
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+initFilters();
+applyFilters();
+renderOverview();
+renderHeatmap();
 </script>
 </body>
 </html>
