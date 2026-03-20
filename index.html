@@ -51,6 +51,38 @@ tr:last-child td{border-bottom:none}
 .insight{background:var(--bg2);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;border-left:3px solid}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px}
+/* ── New tab styles ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--bg2);border-radius:var(--r);padding:14px 16px}
+.kpi-label{font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.kpi-value{font-size:26px;font-weight:500;line-height:1}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:5px}
+.kpi-delta{font-size:11px;margin-top:4px;display:inline-block;padding:2px 6px;border-radius:4px}
+.kd-up{color:#A32D2D;background:#FCEBEB}
+.kd-down{color:#0F6E56;background:#EAF3DE}
+.kd-neutral{color:var(--text2);background:var(--bg2)}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.pill-ok{background:#EAF3DE;color:#3B6D11}
+.pill-warn{background:#FAEEDA;color:#854F0B}
+.pill-bad{background:#FCEBEB;color:#A32D2D}
+.pill-t2{background:#EDEBFF;color:#4D46A0}
+.pill-active{background:#FAEEDA;color:#854F0B}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text2);font-size:13px}
+.stat-val{font-weight:500;font-size:13px}
+.cost-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.cost-item:last-child{border-bottom:none}
+.mkt-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--border)}
+.mkt-item:last-child{border-bottom:none}
+.mkt-name{min-width:48px;font-size:13px;font-weight:500}
+.mkt-bar-wrap{flex:1}
+.mkt-count{min-width:40px;text-align:right;font-size:13px;font-weight:600}
+.budget-bar{width:100%;background:var(--bg2);border-radius:4px;height:8px;margin-top:6px;overflow:hidden}
+.budget-fill{height:100%;border-radius:4px}
+.info-strip{background:#E6F1FB;border:0.5px solid rgba(24,95,165,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#185FA5}
+.pbar{background:var(--bg2);border-radius:4px;height:6px;overflow:hidden;margin-top:4px}
+.pbar-fill{height:100%;border-radius:4px}
 </style>
 </head>
 <body>
@@ -88,6 +120,10 @@ tr:last-child td{border-bottom:none}
     <button class="tb" onclick="showTab('source',this)">Reporter source</button>
     <button class="tb" onclick="showTab('entry',this)">Mode of entry</button>
     <button class="tb" onclick="showTab('heatmap',this)">Activity heatmap</button>
+    <button class="tb" onclick="showTab('investigations',this)">Investigations (T2)</button>
+    <button class="tb" onclick="showTab('identity',this)">Identity &amp; Access</button>
+    <button class="tb" onclick="showTab('costs',this)">Costs &amp; Budget</button>
+    <button class="tb" onclick="showTab('mktdrill',this)">Market drill-down</button>
   </div>
 
   <!-- OVERVIEW -->
@@ -270,7 +306,144 @@ tr:last-child td{border-bottom:none}
       <div class="card" style="margin-bottom:0"><div class="ct">By day (all hours)</div><div id="day-bars"></div></div>
     </div>
   </div>
-</div>
+
+  <!-- INVESTIGATIONS -->
+  <div id="tab-investigations" class="tp">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Active Move-Ins</div><div class="kpi-value" id="inv-active" style="color:#7F77DD">—</div><div class="kpi-sub">Open T2 cases</div></div>
+      <div class="kpi"><div class="kpi-label">Days to Vacate</div><div class="kpi-value" id="inv-dtv" style="color:#1D9E75">—</div><div class="kpi-sub">Avg days (goal ≤4)</div></div>
+      <div class="kpi"><div class="kpi-label">NMO Rate</div><div class="kpi-value" id="inv-nmo" style="color:#1D9E75">—</div><div class="kpi-sub">Negotiated move-out %</div></div>
+      <div class="kpi"><div class="kpi-label">Open Evictions</div><div class="kpi-value" id="inv-evict" style="color:#E24B4A">—</div><div class="kpi-sub">Last resort cases</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">DTV Trend — Monthly Rolling Average</div>
+        <div style="position:relative;width:100%;height:200px"><canvas id="dtvC"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Resolution Types (YTD)</div>
+        <div style="position:relative;width:100%;height:200px"><canvas id="resC"></canvas></div>
+      </div>
+    </div>
+    <div class="g22">
+      <div class="card">
+        <div class="ct">Active Case Log</div>
+        <table><thead><tr><th>Market</th><th>Status</th><th>Days Open</th><th>Resolution Path</th></tr></thead><tbody id="case-log"></tbody></table>
+      </div>
+      <div class="card">
+        <div class="ct">T2 — Emerging Markets</div>
+        <div id="emerging-mkts"></div>
+        <div style="margin-top:14px" class="info-strip">Markets with T2 rate &gt;5% of local inventory are flagged for monitoring. Smaller markets are disproportionately targeted by rental scammers.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IDENTITY & ACCESS -->
+  <div id="tab-identity" class="tp">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Overall Deny Access Rate</div><div class="kpi-value" id="id-deny" style="color:#378ADD">—</div><div class="kpi-sub">Goal: ≤5%</div><span class="kpi-delta" id="id-deny-delta"></span></div>
+      <div class="kpi"><div class="kpi-label">Agent Deny (Total)</div><div class="kpi-value" id="id-agent" style="color:#EF9F27">—</div><div class="kpi-sub">All access decisions</div></div>
+      <div class="kpi"><div class="kpi-label">Agent Deny (Cohort)</div><div class="kpi-value" id="id-cohort" style="color:#EF9F27">—</div><div class="kpi-sub">Agent-only decisions</div></div>
+      <div class="kpi"><div class="kpi-label">Proactively Flagged Ads</div><div class="kpi-value" id="id-ads" style="color:#0F6E56">—</div><div class="kpi-sub">Craigslist / this week</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Deny Access Rate — Weekly Trend</div>
+        <div style="position:relative;width:100%;height:200px"><canvas id="denyC"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Top CRA Rules Firing</div>
+        <table><thead><tr><th>Rule</th><th>% of Denials</th><th>Status</th></tr></thead><tbody id="cra-rules"></tbody></table>
+      </div>
+    </div>
+    <div class="g22">
+      <div class="card">
+        <div class="ct">False Positive Rate</div>
+        <div class="stat-row"><span class="stat-label">Alfred FPR (goal ≤5%)</span><span class="stat-val" id="id-fpr">—</span></div>
+        <div class="stat-row"><span class="stat-label">Profiles shifted to less restrictive</span><span class="stat-val" id="id-fpr-count">—</span></div>
+        <div class="stat-row"><span class="stat-label">IDV escalations per visit</span><span class="stat-val" id="id-esc">—</span></div>
+        <div style="position:relative;width:100%;height:140px;margin-top:12px"><canvas id="fprC"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Rental Scam Ticket Volume — Weekly</div>
+        <div style="position:relative;width:100%;height:200px"><canvas id="scamC"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COSTS & BUDGET -->
+  <div id="tab-costs" class="tp">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Per-Unit T&amp;S Cost</div><div class="kpi-value" style="color:#EF9F27">$120.97</div><div class="kpi-sub">As of Oct 2025</div><span class="kpi-delta kd-up">Goal: $84.68 (-30%)</span></div>
+      <div class="kpi"><div class="kpi-label">C4K Spend YTD</div><div class="kpi-value" id="cost-c4k" style="color:#7F77DD">—</div><div class="kpi-sub">Annual budget: $175k</div></div>
+      <div class="kpi"><div class="kpi-label">C4K Budget Remaining</div><div class="kpi-value" id="cost-c4k-rem" style="color:#1D9E75">—</div><div class="kpi-sub">Of $175k annual</div></div>
+      <div class="kpi"><div class="kpi-label">Avg DIP on Incident Homes</div><div class="kpi-value" style="color:#E24B4A">+45%</div><div class="kpi-sub">Longer than clean homes</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">C4K Spend vs. Budget — Monthly</div>
+        <div style="position:relative;width:100%;height:200px"><canvas id="c4kC"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Vendor Cost Breakdown</div>
+        <div id="vendor-costs"></div>
+      </div>
+    </div>
+    <div class="g22">
+      <div class="card">
+        <div class="ct">Cost Savings Initiatives</div>
+        <table><thead><tr><th>Initiative</th><th>Est. Annual Savings</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Ekata Pro Insight deprecation</td><td style="color:#1D9E75">$21,000</td><td><span class="pill pill-ok">Completed</span></td></tr>
+          <tr><td>Securitas subscription renegotiation</td><td style="color:#1D9E75">$70k–$80k/mo</td><td><span class="pill pill-ok">Completed</span></td></tr>
+          <tr><td>Fake camera deployment (92.5% efficacy)</td><td style="color:#1D9E75">DIP reduction</td><td><span class="pill pill-ok">Active</span></td></tr>
+          <tr><td>AirTag pilot — appliance recovery</td><td style="color:#1D9E75">$1,800+ recovered</td><td><span class="pill pill-warn">Expanding</span></td></tr>
+          <tr><td>FaaS pilot (FirstKey/MainStay)</td><td style="color:#0F6E56">Revenue gen.</td><td><span class="pill pill-warn">In Progress</span></td></tr>
+          <tr><td>Patrol route optimization</td><td style="color:#EF9F27">TBD</td><td><span class="pill pill-warn">Planned</span></td></tr>
+        </tbody></table>
+      </div>
+      <div class="card">
+        <div class="ct">Per-Unit Cost Reduction Roadmap</div>
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="color:var(--text2)">Current: $120.97/home</span>
+            <span style="color:#1D9E75">Goal: $84.68/home</span>
+          </div>
+          <div class="budget-bar"><div class="budget-fill" style="width:30%;background:#EF9F27"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:3px"><span>$0</span><span>30% reduction target by Apr 2026</span><span>$120.97</span></div>
+        </div>
+        <div class="cost-item"><span style="color:var(--text2);font-size:13px">Vendor spend (Securitas/Protos)</span><span style="font-size:13px;font-weight:500">~$37–$250/dispatch</span></div>
+        <div class="cost-item"><span style="color:var(--text2);font-size:13px">End2End Solutions</span><span style="font-size:13px;font-weight:500">$75–$350/case</span></div>
+        <div class="cost-item"><span style="color:var(--text2);font-size:13px">C4K per move-in (avg)</span><span style="font-size:13px;font-weight:500">~$3k–$7k</span></div>
+        <div class="cost-item"><span style="color:var(--text2);font-size:13px">Eviction cost (vs C4K)</span><span style="font-size:13px;font-weight:500">5–10× more than C4K</span></div>
+        <div class="cost-item"><span style="color:var(--text2);font-size:13px">DIP delta on incident home</span><span style="font-size:13px;font-weight:500">+54 days avg</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARKET DRILL-DOWN -->
+  <div id="tab-mktdrill" class="tp">
+    <div class="card">
+      <div class="ct">Incident Rate by Market (T28) — All Tiers</div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="mktBarC"></canvas></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Market Risk Table</div>
+        <div style="overflow-x:auto">
+          <table><thead><tr><th>Market</th><th>Inventory</th><th>T0</th><th>T2</th><th>Rate</th><th>Listing Mix</th><th>Risk</th></tr></thead>
+          <tbody id="mkt-risk-tb"></tbody></table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Self-Tour vs Traditional</div>
+        <div style="position:relative;width:100%;height:220px"><canvas id="selfTradC"></canvas></div>
+        <div style="margin-top:12px" class="info-strip">Self-tour listings consistently show higher incident rates. Markets with &gt;5% T2/inventory moved to 80% traditional.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
 
 <script>
 var TREND=[["2021-01-01","43","9"],["2021-02-01","35","10"],["2021-03-01","41","15"],["2021-04-01","53","15"],["2021-05-01","75","24"],["2021-06-01","140","35"],["2021-07-01","161","45"],["2021-08-01","261","65"],["2021-09-01","264","58"],["2021-10-01","365","118"],["2021-11-01","371","80"],["2021-12-01","378","94"],["2022-01-01","414","99"],["2022-02-01","480","100"],["2022-03-01","717","101"],["2022-04-01","597","70"],["2022-05-01","677","98"],["2022-06-01","643","105"],["2022-07-01","1056","136"],["2022-08-01","1099","158"],["2022-09-01","988","160"],["2022-10-01","826","126"],["2022-11-01","687","82"],["2022-12-01","506","97"],["2023-01-01","498","110"],["2023-02-01","384","100"],["2023-03-01","377","88"],["2023-04-01","299","43"],["2023-05-01","361","51"],["2023-06-01","278","17"],["2023-07-01","311","0"],["2023-08-01","243","0"],["2023-09-01","278","0"],["2023-10-01","269","0"],["2023-11-01","207","0"],["2023-12-01","236","0"],["2024-01-01","294","0"],["2024-02-01","304","0"],["2024-03-01","335","0"],["2024-04-01","401","0"],["2024-05-01","473","0"],["2024-06-01","771","0"],["2024-07-01","768","29"],["2024-08-01","709","98"],["2024-09-01","679","72"],["2024-10-01","492","51"],["2024-11-01","388","40"],["2024-12-01","347","27"],["2025-01-01","407","35"],["2025-02-01","458","41"],["2025-03-01","437","56"],["2025-04-01","377","44"],["2025-05-01","339","15"],["2025-06-01","356","19"],["2025-07-01","390","26"],["2025-08-01","368","22"],["2025-09-01","282","20"],["2025-10-01","240","17"],["2025-11-01","192","10"],["2025-12-01","172","6"],["2026-01-01","215","10"],["2026-02-01","192","15"],["2026-03-01","118","7"]];
@@ -303,26 +476,13 @@ var PATROL_CATS=[["Access Control / Site Inaccessible","1667"],["Trespassing - U
 var PATROL_RESP=[["2022-01-01","61.4"],["2022-02-01","60.7"],["2022-03-01","54.4"],["2022-04-01","53.5"],["2022-06-01","63.7"],["2022-07-01","80.3"],["2022-08-01","72.0"],["2022-09-01","59.8"],["2022-10-01","61.8"],["2022-11-01","65.6"],["2022-12-01","86.2"],["2023-01-01","68.5"],["2023-02-01","60.8"],["2023-03-01","61.7"],["2023-05-01","53.9"],["2023-06-01","61.8"],["2023-07-01","73.2"],["2023-08-01","78.6"],["2023-09-01","68.2"],["2023-10-01","68.2"],["2023-11-01","75.0"],["2023-12-01","85.7"],["2024-01-01","111.1"],["2024-02-01","70.7"],["2024-04-01","97.0"],["2024-06-01","95.6"],["2024-07-01","114.1"],["2024-08-01","90.4"],["2024-09-01","88.7"],["2024-11-01","85.9"],["2024-12-01","90.7"],["2025-01-01","95.9"],["2025-02-01","91.4"],["2025-03-01","86.5"],["2025-04-01","97.3"],["2025-05-01","94.6"],["2025-06-01","105.3"],["2025-07-01","103.0"],["2025-08-01","88.8"],["2025-09-01","99.4"],["2025-10-01","113.1"],["2025-11-01","132.6"],["2025-12-01","141.9"],["2026-01-01","111.0"],["2026-02-01","119.1"],["2026-03-01","105.2"]];
 
 var PATROL_BR=[
-  ["Atlanta","11866","927","104.4","2365","207"],
-  ["Dallas","6663","892","57.1","736","77"],
-  ["Phoenix","6299","988","70.8","530","26"],
-  ["Jacksonville","2727","268","0","313","60"],
-  ["Houston","2471","260","119.2","447","44"],
-  ["Sacramento","2387","213","49.2","306","29"],
-  ["Charlotte","2307","159","82.5","370","70"],
-  ["Raleigh","2087","199","113.5","380","67"],
-  ["Las Vegas","1929","211","34.1","303","27"],
-  ["Orlando","1759","146","58.4","258","26"],
-  ["Indianapolis","1756","179","65.4","132","29"],
-  ["Tampa","1698","34","78.2","266","29"],
-  ["Denver","1503","90","42.9","186","19"],
-  ["Minneapolis","1374","62","40.0","110","30"],
-  ["Ontario CA","1365","146","52.5","536","39"],
-  ["St Louis","1364","79","72.8","126","38"],
-  ["Portland","1340","129","43.4","218","19"],
-  ["San Antonio","1213","41","67.6","90","29"],
-  ["Austin","1094","78","105.6","131","17"],
-  ["Columbus","1090","98","245.8","281","6"]
+  ["Atlanta","11866","927","104.4","2365","207"],["Dallas","6663","892","57.1","736","77"],["Phoenix","6299","988","70.8","530","26"],
+  ["Jacksonville","2727","268","0","313","60"],["Houston","2471","260","119.2","447","44"],["Sacramento","2387","213","49.2","306","29"],
+  ["Charlotte","2307","159","82.5","370","70"],["Raleigh","2087","199","113.5","380","67"],["Las Vegas","1929","211","34.1","303","27"],
+  ["Orlando","1759","146","58.4","258","26"],["Indianapolis","1756","179","65.4","132","29"],["Tampa","1698","34","78.2","266","29"],
+  ["Denver","1503","90","42.9","186","19"],["Minneapolis","1374","62","40.0","110","30"],["Ontario CA","1365","146","52.5","536","39"],
+  ["St Louis","1364","79","72.8","126","38"],["Portland","1340","129","43.4","218","19"],["San Antonio","1213","41","67.6","90","29"],
+  ["Austin","1094","78","105.6","131","17"],["Columbus","1090","98","245.8","281","6"]
 ];
 
 var SC={security_company:"#E24B4A",agent:"#378ADD",opendoor_employee:"#EF9F27",victim:"#7F77DD",customer:"#1D9E75",neighbor:"#BA7517",cleaning_company:"#0F6E56",other:"#888780"};
@@ -383,6 +543,10 @@ function renderCur(){
   else if(curTab==="source")renderSource();
   else if(curTab==="entry")renderEntry();
   else if(curTab==="heatmap")renderHeatmap();
+  else if(curTab==="investigations")renderInv();
+  else if(curTab==="identity")renderIdentity();
+  else if(curTab==="costs")renderCosts();
+  else if(curTab==="mktdrill")renderMktDrill();
 }
 
 function renderOverview(){
@@ -590,6 +754,177 @@ function renderHeatmap(){
   for(var d=0;d<7;d++){
     db.innerHTML+="<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'><span style='font-size:12px;color:var(--text2);width:28px'>"+DN[d]+"</span><div style='flex:1;background:var(--bg2);border-radius:3px;height:16px;overflow:hidden'><div style='width:"+Math.round(dt[d]/dx*100)+"%;height:100%;border-radius:3px;background:#378ADD'></div></div><span style='font-size:12px;font-weight:500;width:40px;text-align:right'>"+fk(dt[d])+"</span></div>";
   }
+}
+
+// ── New tab data ──────────────────────────────────────────────
+var D={
+  active_movein:11, dtv:4.08, nmo_rate:83, open_evictions:5,
+  deny:8.92, agent_deny:0.79, cohort_deny:4.02, ads_flagged:145,
+  fpr:5.7, id_esc:'0.07%', fpr_count:134,
+  c4k_ytd:110000, c4k_budget:175000,
+  dtv_months:['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'],
+  dtv_data:[4.88,6.95,5.72,9.75,6.16,3.4,4.18,4.16,4.08],
+  deny_weeks:['Jan W1','Jan W2','Jan W3','Jan W4','Feb W1','Feb W2','Feb W3','Feb W4','Mar W1','Mar W2'],
+  deny_data:[1.58,1.58,2.21,2.14,7.84,9.42,11.09,8.92,9.68,8.92],
+  scam_weeks:['Jan W1','Jan W2','Jan W3','Jan W4','Feb W1','Feb W2','Feb W3','Feb W4','Mar W1'],
+  scam_data:[82,82,51,33,145,96,58,42,145],
+  fpr_months:['Oct','Nov','Dec','Jan','Feb','Mar'],
+  fpr_data:[4.2,5.1,4.8,5.5,5.7,5.7],
+  c4k_months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  c4k_spend:[5000,20000,14700,11200,9100,0,53300,28800,2000,13200,13500,0],
+  c4k_bgt:[14583,14583,14583,14583,14583,14583,14583,14583,14583,14583,14583,14583],
+  resolution:{NMO:83,C4K:12,Eviction:5},
+  emerging:[
+    {mkt:'CVG',t2_rate:'16.85%',inv:67,note:'New hotspot — monitoring'},
+    {mkt:'KNX',t2_rate:'10.71%',inv:58,note:'Newly targeted'},
+    {mkt:'CLT',t2_rate:'3.08%',inv:210,note:'Elevated vs peer markets'},
+    {mkt:'ATL',t2_rate:'4.17%',inv:310,note:'Persistent — cameras deployed'}
+  ],
+  cases:[
+    {mkt:'DFW',status:'Active',days:4,path:'NMO Negotiating'},
+    {mkt:'ATL',status:'Active',days:7,path:'C4K Offered'},
+    {mkt:'LAX',status:'Active',days:12,path:'Eviction Filed'},
+    {mkt:'CMH',status:'Active',days:2,path:'NMO Negotiating'},
+    {mkt:'IND',status:'Active',days:9,path:'C4K Pending'},
+    {mkt:'DET',status:'Pending LE',days:15,path:'Law Enforcement'}
+  ],
+  cra:[
+    {rule:'Duplicate Phone # (Already Denied)',pct:'52%',status:'active'},
+    {rule:'True IP Routing Type (Proxy/VPN)',pct:'22%',status:'active'},
+    {rule:'Cross-Market Unlocks',pct:'12%',status:'active'},
+    {rule:'Same Market Speed Unlock',pct:'8%',status:'active'},
+    {rule:'Email First Seen < 7 Days',pct:'6%',status:'monitoring'}
+  ],
+  vendors:[
+    {name:'Securitas',detail:'37 markets, patrol + alarm',cost:'$37–$50/dispatch'},
+    {name:'Protos',detail:'All markets, dispatch only',cost:'$250/dispatch'},
+    {name:'End2End Solutions',detail:'All markets, rekey/eviction',cost:'$75–$350/case'},
+    {name:'SmartRent hubs',detail:'Hardware + API integration',cost:'$225/hub'},
+    {name:'Wave Electronics',detail:'Ring cameras (discounted)',cost:'Per unit'}
+  ],
+  mkt_table:[
+    {mkt:'PHX',inv:420,t0:24,t2:4,rate:3.2,mix:'80% Trad',risk:'medium'},
+    {mkt:'DFW',inv:380,t0:18,t2:26,rate:4.1,mix:'80% Trad',risk:'high'},
+    {mkt:'ATL',inv:310,t0:14,t2:14,rate:3.8,mix:'70% Trad',risk:'high'},
+    {mkt:'LAX',inv:290,t0:12,t2:21,rate:2.9,mix:'Standard',risk:'high'},
+    {mkt:'HOU',inv:270,t0:10,t2:12,rate:2.6,mix:'Standard',risk:'medium'},
+    {mkt:'DET',inv:130,t0:8,t2:15,rate:4.8,mix:'80% Trad',risk:'high'},
+    {mkt:'CMH',inv:140,t0:7,t2:14,rate:4.6,mix:'80% Trad',risk:'high'},
+    {mkt:'CLE',inv:105,t0:5,t2:12,rate:4.9,mix:'80% Trad',risk:'high'},
+    {mkt:'IND',inv:155,t0:4,t2:13,rate:4.3,mix:'80% Trad',risk:'high'},
+    {mkt:'STL',inv:90,t0:3,t2:11,rate:4.1,mix:'80% Trad',risk:'medium'},
+    {mkt:'RDU',inv:180,t0:3,t2:5,rate:1.9,mix:'Standard',risk:'low'},
+    {mkt:'SAC',inv:200,t0:6,t2:3,rate:2.1,mix:'Standard',risk:'medium'}
+  ]
+};
+
+function renderInv(){
+  document.getElementById("inv-active").textContent=D.active_movein;
+  document.getElementById("inv-dtv").textContent=D.dtv+" days";
+  document.getElementById("inv-nmo").textContent=D.nmo_rate+"%";
+  document.getElementById("inv-evict").textContent=D.open_evictions;
+  dc("dtv");
+  CH.dtv=new Chart(document.getElementById("dtvC"),{type:"line",
+    data:{labels:D.dtv_months,datasets:[
+      {label:"Days to Vacate",data:D.dtv_data,borderColor:"#1D9E75",backgroundColor:"rgba(29,158,117,0.08)",tension:.4,fill:true,pointRadius:3,borderWidth:2},
+      {label:"Goal (4 days)",data:D.dtv_months.map(function(){return 4;}),borderColor:"rgba(55,138,221,0.5)",borderDash:[6,4],pointRadius:0,borderWidth:1.5,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:"index",intersect:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:"#888",font:{size:10}},grid:{color:"rgba(0,0,0,0.05)"},title:{display:true,text:"Days",color:"#888",font:{size:10}}}}}});
+  dc("res");
+  CH.res=new Chart(document.getElementById("resC"),{type:"doughnut",
+    data:{labels:["NMO (Negotiated)","Cash for Keys","Eviction"],
+      datasets:[{data:[D.resolution.NMO,D.resolution.C4K,D.resolution.Eviction],backgroundColor:["#1D9E75","#EF9F27","#E24B4A"],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"55%",plugins:{legend:{position:"bottom",labels:{color:"#555",font:{size:11},padding:10}}}}});
+  document.getElementById("case-log").innerHTML=D.cases.map(function(c){
+    return "<tr><td><strong>"+c.mkt+"</strong></td><td><span class='pill "+(c.status==="Active"?"pill-active":"pill-bad")+"'>"+c.status+"</span></td><td>"+c.days+"d</td><td style='color:var(--text2)'>"+c.path+"</td></tr>";
+  }).join("");
+  document.getElementById("emerging-mkts").innerHTML=D.emerging.map(function(e){
+    return "<div class='mkt-item'><span class='mkt-name'>"+e.mkt+"</span><div class='mkt-bar-wrap'><span style='font-size:12px;color:var(--text2)'>"+e.note+"</span></div><span class='badge br' style='font-size:12px'>"+e.t2_rate+"</span></div>";
+  }).join("");
+}
+
+function renderIdentity(){
+  document.getElementById("id-deny").textContent=D.deny+"%";
+  var denyEl=document.getElementById("id-deny-delta");
+  denyEl.textContent=D.deny>5?"⚠ Above 5% goal":"✓ Within goal";
+  denyEl.className="kpi-delta "+(D.deny>5?"kd-up":"kd-down");
+  document.getElementById("id-agent").textContent=D.agent_deny+"%";
+  document.getElementById("id-cohort").textContent=D.cohort_deny+"%";
+  document.getElementById("id-ads").textContent=D.ads_flagged;
+  document.getElementById("id-fpr").textContent=D.fpr+"%";
+  document.getElementById("id-fpr-count").textContent=D.fpr_count;
+  document.getElementById("id-esc").textContent=D.id_esc;
+  dc("deny");
+  CH.deny=new Chart(document.getElementById("denyC"),{type:"line",
+    data:{labels:D.deny_weeks,datasets:[
+      {label:"Deny Access Rate %",data:D.deny_data,borderColor:"#378ADD",backgroundColor:"rgba(55,138,221,0.08)",tension:.4,fill:true,pointRadius:3,borderWidth:2},
+      {label:"5% Goal",data:D.deny_weeks.map(function(){return 5;}),borderColor:"rgba(29,158,117,0.5)",borderDash:[6,4],pointRadius:0,borderWidth:1.5,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:"index",intersect:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10},maxRotation:45},grid:{display:false}},
+        y:{ticks:{color:"#888",font:{size:10},callback:function(v){return v+"%";}},grid:{color:"rgba(0,0,0,0.05)"}}}}});
+  document.getElementById("cra-rules").innerHTML=D.cra.map(function(r){
+    return "<tr><td style='font-size:12px'>"+r.rule+"</td><td><strong>"+r.pct+"</strong></td><td><span class='pill "+(r.status==="active"?"pill-ok":"pill-warn")+"'>"+r.status+"</span></td></tr>";
+  }).join("");
+  dc("fpr");
+  CH.fpr=new Chart(document.getElementById("fprC"),{type:"bar",
+    data:{labels:D.fpr_months,datasets:[{label:"FPR %",data:D.fpr_data,backgroundColor:"rgba(55,138,221,0.5)",borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:"#888",font:{size:10},callback:function(v){return v+"%";}},grid:{color:"rgba(0,0,0,0.05)"}}}}});
+  dc("scam");
+  CH.scam=new Chart(document.getElementById("scamC"),{type:"bar",
+    data:{labels:D.scam_weeks,datasets:[{label:"Scam Tickets",data:D.scam_data,backgroundColor:"rgba(127,119,221,0.6)",borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10},maxRotation:45},grid:{display:false}},
+        y:{ticks:{color:"#888",font:{size:10}},grid:{color:"rgba(0,0,0,0.05)"}}}}});
+}
+
+function renderCosts(){
+  document.getElementById("cost-c4k").textContent="$"+Math.round(D.c4k_ytd/1000)+"k";
+  document.getElementById("cost-c4k-rem").textContent="$"+Math.round((D.c4k_budget-D.c4k_ytd)/1000)+"k";
+  dc("c4k");
+  CH.c4k=new Chart(document.getElementById("c4kC"),{type:"bar",
+    data:{labels:D.c4k_months,datasets:[
+      {label:"Actual Spend",data:D.c4k_spend,backgroundColor:"rgba(127,119,221,0.6)",borderRadius:3},
+      {label:"Monthly Budget",data:D.c4k_bgt,type:"line",borderColor:"rgba(29,158,117,0.6)",borderDash:[5,4],pointRadius:0,borderWidth:1.5,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#555",font:{size:11}}},tooltip:{mode:"index",intersect:false}},
+      scales:{x:{ticks:{color:"#888",font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:"#888",font:{size:10},callback:function(v){return "$"+fk(v);}},grid:{color:"rgba(0,0,0,0.05)"}}}}});
+  document.getElementById("vendor-costs").innerHTML=D.vendors.map(function(v){
+    return "<div class='cost-item'><div><div style='font-size:13px;font-weight:500'>"+v.name+"</div><div style='font-size:11px;color:var(--text3)'>"+v.detail+"</div></div><span style='font-size:12px;color:#EF9F27;font-weight:500'>"+v.cost+"</span></div>";
+  }).join("");
+}
+
+function renderMktDrill(){
+  dc("mktBar");
+  var labels=D.mkt_table.map(function(r){return r.mkt;});
+  CH.mktBar=new Chart(document.getElementById("mktBarC"),{type:"bar",
+    data:{labels:labels,datasets:[
+      {label:"T0",data:D.mkt_table.map(function(r){return r.t0;}),backgroundColor:"rgba(226,75,74,0.7)",stack:"a"},
+      {label:"T2",data:D.mkt_table.map(function(r){return r.t2;}),backgroundColor:"rgba(127,119,221,0.7)",stack:"a"}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#555",font:{size:11}}},tooltip:{mode:"index",intersect:false}},
+      scales:{x:{stacked:true,ticks:{color:"#888",font:{size:10}},grid:{display:false}},
+        y:{stacked:true,ticks:{color:"#888",font:{size:10}},grid:{color:"rgba(0,0,0,0.05)"}}}}});
+  var riskMap={high:"pill-bad",medium:"pill-warn",low:"pill-ok"};
+  document.getElementById("mkt-risk-tb").innerHTML=D.mkt_table.map(function(r){
+    return "<tr><td><strong>"+r.mkt+"</strong></td><td>"+r.inv+"</td><td style='color:#E24B4A'>"+r.t0+"</td><td style='color:#7F77DD'>"+r.t2+"</td><td>"+r.rate+"%</td><td style='font-size:12px;color:var(--text2)'>"+r.mix+"</td><td><span class='pill "+riskMap[r.risk]+"'>"+r.risk+"</span></td></tr>";
+  }).join("");
+  dc("selfTrad");
+  CH.selfTrad=new Chart(document.getElementById("selfTradC"),{type:"radar",
+    data:{
+      labels:["T0 Rate","T2 Rate","T3 Rate","T4 Rate","T5 Rate"],
+      datasets:[
+        {label:"Self-Tour",data:[0.45,0.32,0.8,0.25,0.6],borderColor:"#E24B4A",backgroundColor:"rgba(226,75,74,0.08)",borderWidth:2,pointRadius:3},
+        {label:"Traditional",data:[0.18,0.09,0.3,0.1,0.25],borderColor:"#1D9E75",backgroundColor:"rgba(29,158,117,0.08)",borderWidth:2,pointRadius:3}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#555",font:{size:11}}}},
+      scales:{r:{grid:{color:"rgba(0,0,0,0.08)"},ticks:{color:"#888",backdropColor:"transparent",font:{size:9}},pointLabels:{color:"#555",font:{size:11}}}}}});
 }
 
 function exportCSV(){
