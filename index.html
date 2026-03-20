@@ -21,7 +21,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .main{padding:20px 24px;max-width:1400px;margin:0 auto}
 .fbar{display:flex;gap:10px;align-items:center;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:10px 16px;margin-bottom:16px;flex-wrap:wrap}
 .fbar label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
-.fbar select{font-size:12px;padding:5px 8px;border-radius:var(--r);border:0.5px solid var(--border);background:var(--bg2);color:var(--text);height:30px;cursor:pointer}
+.fbar select,.fbar input[type="date"]{font-size:12px;padding:5px 8px;border-radius:var(--r);border:0.5px solid var(--border);background:var(--bg2);color:var(--text);height:30px;cursor:pointer}
 .fcnt{margin-left:auto;font-size:11px;color:var(--text3)}
 .tabs{display:flex;gap:2px;border-bottom:0.5px solid var(--border);margin-bottom:16px;overflow-x:auto}
 .tb{padding:9px 14px;font-size:13px;color:var(--text2);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;margin-bottom:-1px}
@@ -99,9 +99,9 @@ tr:last-child td{border-bottom:none}
 <div class="main">
   <div class="fbar">
     <label>Date range</label>
-    <select id="sd" onchange="applyF()"></select>
+    <input type="date" id="sd" onchange="applyF()">
     <span style="font-size:12px;color:var(--text3)">to</span>
-    <select id="ed" onchange="applyF()"></select>
+    <input type="date" id="ed" onchange="applyF()">
     <span style="font-size:12px;color:var(--text3);margin-left:8px">|</span>
     <label style="margin-left:8px">Incident type</label>
     <select id="tf" onchange="applyF()"><option value="all">All types</option></select>
@@ -501,11 +501,9 @@ var allM=[]; for(var i=0;i<TREND.length;i++){allM.push(TREND[i][0]);}
 
 function initF(){
   var sd=document.getElementById("sd"),ed=document.getElementById("ed");
-  for(var i=0;i<allM.length;i++){
-    sd.innerHTML+="<option value='"+allM[i]+"'>"+allM[i]+"</option>";
-    ed.innerHTML+="<option value='"+allM[i]+"'>"+allM[i]+"</option>";
-  }
-  ed.value=allM[allM.length-1];
+  var minDate=allM[0],maxDate="2026-03-31";
+  sd.min=minDate; sd.max=maxDate; sd.value=minDate;
+  ed.min=minDate; ed.max=maxDate; ed.value=maxDate;
   for(var i=0;i<TYPES.length;i++){document.getElementById("tf").innerHTML+="<option value='"+TYPES[i][0]+"'>"+fl(TYPES[i][0])+"</option>";}
   for(var i=0;i<MARKETS.length;i++){document.getElementById("mf").innerHTML+="<option value='"+MARKETS[i][0]+"'>"+MARKETS[i][0]+"</option>";}
 }
