@@ -456,8 +456,9 @@ var KNOX_M=[["2023-01-01","498","148","4.83"],["2023-04-01","299","96","3.00"],[
 
 var ALFRED=[["3","","1956","2.86"],["0","","1876","2.32"],["2","","1839","1.81"],["3","3","1611","2.20"],["4","4","1498","2.32"],["6","","1426","2.39"],["8","","1368","3.99"],["8","5","1104","5.61"],["4","","897","2.19"],["8","6","865","2.50"],["0","5","822","2.25"],["2","2","704","1.73"]];
 
-var TIERS=[["1","1158","356"],["2","3598","451"],["3","3868","1311"],["4","980","97"]];
-var TC={"1":"#1D9E75","2":"#EF9F27","3":"#E24B4A","4":"#A32D2D"};
+var TIERS=[["tier_0","471","186"],["tier_1","191","48"],["tier_2","619","141"],["tier_3","1157","294"],["tier_4","2389","573"],["tier_5","1592","99"],["tier_6","1779","316"],["tier_7","117","11"],["tier_8","175","32"]];
+var TC={"tier_0":"#1D9E75","tier_1":"#3BAE8A","tier_2":"#EF9F27","tier_3":"#D85A30","tier_4":"#E24B4A","tier_5":"#A32D2D","tier_6":"#7F77DD","tier_7":"#378ADD","tier_8":"#B4B2A9"};
+function tierLabel(t){return "Tier "+t.replace("tier_","");}
 
 var TYPES=[["activity","3505","1226"],["vandalism","2599","468"],["theft","1272","67"],["trespassing","1227","0"],["scam","1050","123"],["scam_rental_sent_money","1007","150"],["other","989","32"],["unknown","759","92"],["scam_rental","748","15"],["damage_vandalism","678","39"],["encounter_person_present","643","113"],["items","621","172"],["encounter_person_possible","580","63"],["uninviting_home_unlocked","568","47"],["signs_of_squatters","527","0"],["paraphernalia","421","52"],["break_in","389","101"],["drugs","270","55"],["injury","163","38"]];
 
@@ -571,10 +572,10 @@ function renderOverview(){
         y:{ticks:{color:"#888",font:{size:10},callback:function(v){return fk(v);}},grid:{color:"rgba(0,0,0,0.05)"}}}}});
   dc("tier");
   CH.tier=new Chart(document.getElementById("tierC"),{type:"doughnut",
-    data:{labels:TIERS.map(function(r){return "Tier "+r[0];}),datasets:[{data:TIERS.map(function(r){return +r[1];}),backgroundColor:TIERS.map(function(r){return TC[r[0]];}),borderWidth:0,hoverOffset:4}]},
+    data:{labels:TIERS.map(function(r){return tierLabel(r[0]);}),datasets:[{data:TIERS.map(function(r){return +r[1];}),backgroundColor:TIERS.map(function(r){return TC[r[0]];}),borderWidth:0,hoverOffset:4}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{display:false}}}});
-  document.getElementById("tier-lg").innerHTML=TIERS.map(function(r){return "<div class='li'><div class='sw' style='background:"+TC[r[0]]+"'></div>Tier "+r[0]+" ("+fm(+r[1])+")</div>";}).join("");
-  document.getElementById("tier-tb").innerHTML=TIERS.map(function(r){return "<tr><td><span style='display:flex;align-items:center;gap:6px'><span style='width:8px;height:8px;border-radius:2px;background:"+TC[r[0]]+";flex-shrink:0'></span>Tier "+r[0]+"</span></td><td>"+fm(+r[1])+"</td><td>"+fm(+r[2])+"</td><td>"+Math.round(+r[2]/+r[1]*100)+"%</td></tr>";}).join("");
+  document.getElementById("tier-lg").innerHTML=TIERS.map(function(r){return "<div class='li'><div class='sw' style='background:"+TC[r[0]]+"'></div>"+tierLabel(r[0])+" ("+fm(+r[1])+")</div>";}).join("");
+  document.getElementById("tier-tb").innerHTML=TIERS.map(function(r){return "<tr><td><span style='display:flex;align-items:center;gap:6px'><span style='width:8px;height:8px;border-radius:2px;background:"+TC[r[0]]+";flex-shrink:0'></span>"+tierLabel(r[0])+"</span></td><td>"+fm(+r[1])+"</td><td>"+fm(+r[2])+"</td><td>"+Math.round(+r[2]/+r[1]*100)+"%</td></tr>";}).join("");
 }
 
 function renderRate(){
